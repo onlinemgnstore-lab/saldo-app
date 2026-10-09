@@ -706,6 +706,23 @@
   </div>
 </div>
 
+<div class="overlay" id="trialOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🎉 Grátis por 30 dias</div>
+    <p style="color:var(--ink-muted); font-size:14px; line-height:1.55; margin:0 0 4px;">
+      Você está no período de testes do Saldo — totalmente grátis por 30 dias, sem
+      cartão e sem compromisso. Aproveite para organizar seus lançamentos, contas
+      fixas e relatórios.
+    </p>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="trialCloseBtn" type="button" style="width:100%;">Entendi</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 </div>
 
@@ -812,6 +829,10 @@
     $("reportsCloseBtn").addEventListener("click", closeReportsSheet);
     els.reportsOverlay.addEventListener("click", function(e){ if(e.target === els.reportsOverlay) closeReportsSheet(); });
 
+    els.trialOverlay = $("trialOverlay");
+    $("trialCloseBtn").addEventListener("click", closeTrialPopup);
+    els.trialOverlay.addEventListener("click", function(e){ if(e.target === els.trialOverlay) closeTrialPopup(); });
+
     document.querySelectorAll(".bill-type-btn").forEach(function(btn){
       btn.addEventListener("click", function(){ setBillFormType(btn.getAttribute("data-type")); });
     });
@@ -851,6 +872,21 @@
   function showAppScreen(){
     els.authScreen.style.display = "none";
     els.appRoot.style.display = "block";
+    maybeShowTrialPopup();
+  }
+
+  // Avisa que o período de testes é grátis por 30 dias. Mostra uma vez só
+  // por aparelho/navegador (não é um bloqueio de verdade após esse prazo —
+  // é só um aviso; quem controla quem continua pagando é você, por fora).
+  function maybeShowTrialPopup(){
+    try{
+      if(localStorage.getItem("saldo_trial_popup_seen") === "1") return;
+    } catch(e){}
+    if(els.trialOverlay) els.trialOverlay.classList.add("open");
+  }
+  function closeTrialPopup(){
+    if(els.trialOverlay) els.trialOverlay.classList.remove("open");
+    try{ localStorage.setItem("saldo_trial_popup_seen", "1"); } catch(e){}
   }
 
   function initAuth(){
