@@ -832,6 +832,7 @@
   var AVATAR_COLORS = ["--avatar-a","--avatar-b","--avatar-c","--avatar-d","--avatar-e","--avatar-f","--avatar-g","--avatar-h"];
   var LOCAL_KEY = "saldo_transactions_v1";
   var BILLS_LOCAL_KEY = "saldo_bill_templates_v1";
+  var SKIPPED_BILLGEN_LOCAL_KEY = "saldo_skipped_billgen_v1";
 
   // ---------- configuração do Supabase ----------
   // cole aqui a URL e a chave "anon public" do seu projeto Supabase
@@ -862,6 +863,8 @@
     transactions: [],   // {id,type,amount,category,note,date,createdAt}
     billTemplates: [],  // {id,name,category,estimatedAmount,dueDay}
     pendingBillGen: {},
+    skippedBillGen: {},  // ids de lançamentos de conta fixa excluídos de propósito (não devem voltar)
+    skipReady: false,
     importItems: [],    // itens lidos da fatura, aguardando revisão/confirmação
     importProgressTimer: null,
     year: new Date().getFullYear(),
@@ -1540,6 +1543,46 @@
     state.dbApi = makeSupabaseDb(sb, currentUserId);
     subscribeDb();
     subscribeBillTemplates();
+    subscribeSkippedBillGen();
+  }
+
+  // Lembra, por conta fixa + mês, quando a pessoa excluiu de propósito o
+  // lançamento gerado automaticamente — sem isso, ensureRecurringForVisibleMonth
+  // recriava o mesmo lançamento na próxima vez que o app carregasse, porque só
+  // olhava se ele "ainda existia" (e não existia mais, claro, pois tinha sido
+  // excluído). O id do lançamento gerado é sempre "rb_<idDaConta>_<ano-mês>",
+  // então basta guardar esse mesmo id como "pulado".
+  function subscribeSkippedBillGen(){
+    try{
+      state.dbApi.collection("skippedBillGen").onSnapshot(
+        function(snap){
+          var map = {};
+          snap.docs.forEach(function(d){ map[d.id] = true; });
+          state.skippedBillGen = map;
+          state.skipReady = true;
+          maybeGenerateRecurring();
+        },
+        function(){ state.skipReady = true; maybeGenerateRecurring(); }
+      );
+    } catch(e){ state.skipReady = true; maybeGenerateRecurring(); }
+  }
+
+  function loadSkippedBillGenLocal(){
+    try{
+      var raw = localStorage.getItem(SKIPPED_BILLGEN_LOCAL_KEY);
+      state.skippedBillGen = raw ? JSON.parse(raw) : {};
+    } catch(e){ state.skippedBillGen = {}; }
+  }
+  function saveSkippedBillGenLocal(){
+    try{ localStorage.setItem(SKIPPED_BILLGEN_LOCAL_KEY, JSON.stringify(state.skippedBillGen)); } catch(e){}
+  }
+  function markBillGenSkipped(id){
+    state.skippedBillGen[id] = true;
+    if(state.backend === "db"){
+      state.dbApi.doc("skippedBillGen/" + id).set({ skipped: true, at: Date.now() }).catch(function(){});
+    } else {
+      saveSkippedBillGenLocal();
+    }
   }
 
   function subscribeBillTemplates(){
@@ -1619,7 +1662,7 @@
   // disso é o que causava duplicatas (a checagem "já existe?" rodava contra
   // uma lista de lançamentos ainda vazia)
   function maybeGenerateRecurring(){
-    if(!state.txReady || !state.billsReady) return;
+    if(!state.txReady || !state.billsReady || !state.skipReady) return;
     ensureRecurringForVisibleMonth();
   }
 
@@ -1653,6 +1696,7 @@
     state.billTemplates.forEach(function(tpl){
       var fixedId = "rb_" + tpl.id + "_" + viewKey;
       if(state.pendingBillGen[fixedId]) return;
+      if(state.skippedBillGen[fixedId]) return;
       var exists = state.transactions.some(function(t){ return t.id === fixedId || (t.templateId === tpl.id && t.date && t.date.indexOf(viewKey) === 0); });
       if(exists) return;
       state.pendingBillGen[fixedId] = true;
@@ -1722,8 +1766,10 @@
     state.backend = "local";
     loadLocal();
     loadBillTemplatesLocal();
+    loadSkippedBillGenLocal();
     state.txReady = true;
     state.billsReady = true;
+    state.skipReady = true;
     maybeGenerateRecurring();
     renderAll();
   }
@@ -1765,6 +1811,9 @@
     }
   }
   function deleteTx(id){
+    // lançamento gerado de uma conta fixa (id sempre começa com "rb_") —
+    // marca como "pulado" pra não ser recriado da próxima vez
+    if(String(id).indexOf("rb_") === 0) markBillGenSkipped(id);
     if(state.backend === "db"){
       return state.dbApi.doc("transactions/" + id).delete().catch(function(){
         showToast("Não foi possível excluir agora.");
