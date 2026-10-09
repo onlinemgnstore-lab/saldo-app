@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Saldo — Administração</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="icon-192.png" type="image/png">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --bg:#F3F5F1; --surface:#FFFFFF; --surface-alt:#E9ECE4;
+    --ink:#16261E; --ink-muted:#5C6D62; --ink-faint:#8B9A8F;
+    --border:#DCE1D6; --accent:#1F6F54; --accent-ink:#FFFFFF; --accent-soft:#E3F0E9;
+    --income:#2F8F5B; --expense:#BE5433; --shadow:0 10px 30px rgba(22,38,30,0.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1713; --surface:#17211C; --surface-alt:#1C2721;
+      --ink:#EAF0EA; --ink-muted:#9FB3A5; --ink-faint:#6D8577;
+      --border:#283A31; --accent:#4FBF8D; --accent-ink:#0F1713; --accent-soft:#1C3428;
+      --income:#4FBF8D; --expense:#E08064; --shadow:0 10px 30px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1713; --surface:#17211C; --surface-alt:#1C2721;
+    --ink:#EAF0EA; --ink-muted:#9FB3A5; --ink-faint:#6D8577;
+    --border:#283A31; --accent:#4FBF8D; --accent-ink:#0F1713; --accent-soft:#1C3428;
+    --income:#4FBF8D; --expense:#E08064; --shadow:0 10px 30px rgba(0,0,0,0.35);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Manrope',sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:720px; margin:0 auto; padding:24px 18px 60px; }
+  .brand{ display:flex; align-items:center; gap:8px; font-family:'Fraunces',serif; font-weight:600; font-size:15px; letter-spacing:0.02em; }
+  .brand svg{ width:20px; height:20px; color:var(--accent); }
+  h1{ font-family:'Fraunces',serif; font-weight:500; font-size:22px; margin:18px 0 4px; }
+  .sub{ color:var(--ink-muted); font-size:13.5px; margin:0 0 22px; }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px 22px; box-shadow:var(--shadow); max-width:380px; margin:60px auto; }
+  .field{ margin-bottom:14px; }
+  label{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-muted); margin-bottom:6px; }
+  input{
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--surface-alt); color:var(--ink); font:inherit; font-size:14.5px;
+  }
+  .btn{
+    border:none; border-radius:10px; padding:11px 16px; font:inherit; font-weight:700;
+    font-size:13.5px; cursor:pointer;
+  }
+  .btn.primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn.ghost{ background:var(--surface-alt); color:var(--ink); }
+  .btn.danger{ background:var(--expense); color:#fff; }
+  .btn:disabled{ opacity:0.5; cursor:default; }
+  .msg{ font-size:12.5px; color:var(--expense); margin:10px 0 2px; min-height:14px; line-height:1.4; }
+  .msg.ok{ color:var(--income); }
+  .toprow{ display:flex; align-items:center; justify-content:space-between; }
+  table{ width:100%; border-collapse:collapse; margin-top:10px; }
+  th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-faint); padding:0 10px 8px; }
+  td{ background:var(--surface); padding:12px 10px; font-size:13.5px; border-top:1px solid var(--border); }
+  tr td:first-child{ border-radius:12px 0 0 12px; }
+  tr td:last-child{ border-radius:0 12px 12px 0; }
+  .pill{ display:inline-block; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:700; }
+  .pill.ok{ background:var(--accent-soft); color:var(--accent); }
+  .pill.warn{ background:#F7E7C4; color:#8A6417; }
+  .pill.blocked{ background:#F7E0D8; color:var(--expense); }
+  .row-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+  .row-actions .btn{ padding:7px 10px; font-size:12px; }
+  .empty{ color:var(--ink-faint); font-size:13.5px; padding:30px 0; text-align:center; }
+  .loading{ color:var(--ink-faint); font-size:13.5px; padding:30px 0; text-align:center; }
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="card">
+  <div class="brand" style="justify-content:center; margin-bottom:18px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14.5" r="1"/></svg>
+    Saldo — Administração
+  </div>
+  <div class="field">
+    <label for="loginEmail">E-mail</label>
+    <input id="loginEmail" type="email" autocomplete="email" placeholder="voce@exemplo.com">
+  </div>
+  <div class="field">
+    <label for="loginPassword">Senha</label>
+    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+  </div>
+  <div class="msg" id="loginMsg"></div>
+  <button class="btn primary" id="loginBtn" type="button" style="width:100%;">Entrar</button>
+</div>
+
+<div id="deniedScreen" class="card" style="display:none;">
+  <div class="brand" style="justify-content:center; margin-bottom:12px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14.5" r="1"/></svg>
+    Saldo — Administração
+  </div>
+  <p style="color:var(--ink-muted); font-size:14px; text-align:center; margin:0 0 16px;">
+    Essa conta não tem acesso ao painel de administração.
+  </p>
+  <button class="btn ghost" id="deniedLogoutBtn" type="button" style="width:100%;">Sair</button>
+</div>
+
+<div id="adminScreen" style="display:none;">
+  <div class="wrap">
+    <div class="toprow">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14.5" r="1"/></svg>
+        Saldo
+      </div>
+      <button class="btn ghost" id="logoutBtn" type="button">Sair</button>
+    </div>
+    <h1>Usuários</h1>
+    <p class="sub">Liberar dá mais 30 dias de acesso a partir de agora. Bloquear corta o acesso na hora, mesmo dentro do prazo.</p>
+    <div id="listArea" class="loading">Carregando…</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // mesmos dados do projeto Supabase usados no index.html
+  var SUPABASE_URL = "https://eiceoetvgaquxjgheeea.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpY2VvZXR2Z2FxdXhqZ2hlZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MzM5NzAsImV4cCI6MjEwNzEwOTk3MH0.ZkMsGNMA-p_Fiq9q-SbW2RNxUFEOb223ajmopmSa1j4";
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  if(!window.supabase || typeof window.supabase.createClient !== "function"){
+    $("loginMsg").textContent = "Não foi possível carregar a biblioteca do Supabase. Verifique sua conexão com a internet e recarregue a página.";
+    $("loginBtn").disabled = true;
+    return;
+  }
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function show(id){
+    ["loginScreen","deniedScreen","adminScreen"].forEach(function(s){
+      $(s).style.display = (s === id) ? (s === "adminScreen" ? "block" : "flex") : "none";
+    });
+  }
+
+  function setMsg(text, ok){
+    var el = $("loginMsg");
+    el.textContent = text || "";
+    el.className = "msg" + (ok ? " ok" : "");
+  }
+
+  $("loginBtn").addEventListener("click", function(){
+    var email = ($("loginEmail").value || "").trim();
+    var password = $("loginPassword").value || "";
+    if(!email || !password){ setMsg("Preencha e-mail e senha."); return; }
+    $("loginBtn").disabled = true;
+    setMsg("Entrando…");
+    sb.auth.signInWithPassword({ email: email, password: password }).then(function(res){
+      $("loginBtn").disabled = false;
+      if(res.error){ setMsg(res.error.message || "Não foi possível entrar."); return; }
+      boot();
+    }).catch(function(){
+      $("loginBtn").disabled = false;
+      setMsg("Falha de conexão. Tente de novo.");
+    });
+  });
+  [$("loginEmail"), $("loginPassword")].forEach(function(input){
+    input.addEventListener("keydown", function(e){ if(e.key === "Enter") $("loginBtn").click(); });
+  });
+
+  $("deniedLogoutBtn").addEventListener("click", function(){ sb.auth.signOut().then(function(){ show("loginScreen"); }); });
+  $("logoutBtn").addEventListener("click", function(){ sb.auth.signOut().then(function(){ show("loginScreen"); }); });
+
+  function fmtDate(iso){
+    var d = new Date(iso);
+    return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+  }
+
+  function statusPill(profile){
+    if(profile.blocked) return '<span class="pill blocked">Bloqueado</span>';
+    var msLeft = new Date(profile.access_until).getTime() - Date.now();
+    if(msLeft <= 0) return '<span class="pill blocked">Vencido</span>';
+    var daysLeft = Math.floor(msLeft / (1000*60*60*24));
+    if(daysLeft <= 1) return '<span class="pill warn">Vence em breve</span>';
+    return '<span class="pill ok">Ativo</span>';
+  }
+
+  function loadUsers(){
+    $("listArea").className = "loading";
+    $("listArea").textContent = "Carregando…";
+    sb.from("profiles").select("id, email, access_until, blocked, is_admin").order("created_at", {ascending:false})
+      .then(function(res){
+        if(res.error){
+          $("listArea").className = "empty";
+          $("listArea").textContent = "Não foi possível carregar: " + res.error.message;
+          return;
+        }
+        renderUsers(res.data || []);
+      });
+  }
+
+  function renderUsers(list){
+    if(!list.length){
+      $("listArea").className = "empty";
+      $("listArea").textContent = "Nenhum usuário cadastrado ainda.";
+      return;
+    }
+    var html = '<table><thead><tr><th>E-mail</th><th>Status</th><th>Acesso até</th><th></th></tr></thead><tbody>';
+    list.forEach(function(p){
+      html += '<tr>' +
+        '<td>' + (p.email || p.id) + (p.is_admin ? ' <span class="pill ok">admin</span>' : '') + '</td>' +
+        '<td>' + statusPill(p) + '</td>' +
+        '<td>' + fmtDate(p.access_until) + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button class="btn primary" data-action="liberar" data-id="' + p.id + '">Liberar (+30d)</button>' +
+          '<button class="btn danger" data-action="bloquear" data-id="' + p.id + '">Bloquear</button>' +
+        '</div></td>' +
+        '</tr>';
+    });
+    html += '</tbody></table>';
+    $("listArea").className = "";
+    $("listArea").innerHTML = html;
+
+    $("listArea").querySelectorAll("button[data-action]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var id = btn.getAttribute("data-id");
+        var action = btn.getAttribute("data-action");
+        btn.disabled = true;
+        var update = action === "liberar"
+          ? { access_until: new Date(Date.now() + 30*24*60*60*1000).toISOString(), blocked: false }
+          : { blocked: true };
+        sb.from("profiles").update(update).eq("id", id).then(function(res){
+          btn.disabled = false;
+          if(res.error){ alert("Não foi possível atualizar: " + res.error.message); return; }
+          loadUsers();
+        });
+      });
+    });
+  }
+
+  function boot(){
+    sb.auth.getSession().then(function(res){
+      var session = res.data && res.data.session;
+      if(!session || !session.user){ show("loginScreen"); return; }
+      sb.from("profiles").select("is_admin").eq("id", session.user.id).maybeSingle().then(function(res){
+        if(res.error || !res.data || !res.data.is_admin){ show("deniedScreen"); return; }
+        show("adminScreen");
+        loadUsers();
+      });
+    });
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

@@ -500,6 +500,29 @@
   </div>
 </div>
 
+<div id="blockedScreen" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="brand" style="justify-content:center;margin-bottom:18px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14.5" r="1"/></svg>
+      Saldo
+    </div>
+    <div class="sheet-title" style="text-align:center;" id="blockedTitle">Acesso bloqueado</div>
+    <p style="color:var(--ink-muted); font-size:14px; line-height:1.55; margin:0 0 16px; text-align:center;" id="blockedMsg">
+      Seu período de teste terminou. Para continuar usando o Saldo, faça o
+      pagamento via Pix e avise pelo WhatsApp que o acesso pode ser liberado.
+    </p>
+    <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:14px;">
+      <div style="font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Chave Pix</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+        <span id="blockedPixKey" style="font:600 14px 'IBM Plex Mono',monospace; word-break:break-all;"></span>
+        <button class="btn ghost" id="blockedCopyPixBtn" type="button" style="padding:6px 10px; font-size:12px; white-space:nowrap;">Copiar</button>
+      </div>
+    </div>
+    <a id="blockedWhatsAppBtn" class="btn primary" href="#" target="_blank" rel="noopener" style="width:100%; display:flex; align-items:center; justify-content:center; text-decoration:none; margin-bottom:8px;">Avisar no WhatsApp</a>
+    <button class="btn ghost" id="blockedLogoutBtn" type="button" style="width:100%;">Sair</button>
+  </div>
+</div>
+
 <div id="appRoot" style="display:none;">
 <div class="shell" id="shell">
   <header>
@@ -723,6 +746,30 @@
   </div>
 </div>
 
+<div class="overlay" id="renewalOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="renewalTitle">⏰ Seu teste está acabando</div>
+    <p style="color:var(--ink-muted); font-size:14px; line-height:1.55; margin:0 0 14px;" id="renewalMsg">
+      Seu período de teste grátis vence em breve. Para continuar usando o
+      Saldo sem interrupção, faça o pagamento via Pix e avise pelo WhatsApp.
+    </p>
+    <div style="background:var(--surface-alt); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:4px;">
+      <div style="font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Chave Pix</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+        <span id="renewalPixKey" style="font:600 14px 'IBM Plex Mono',monospace; word-break:break-all;"></span>
+        <button class="btn ghost" id="renewalCopyPixBtn" type="button" style="padding:6px 10px; font-size:12px; white-space:nowrap;">Copiar</button>
+      </div>
+    </div>
+   </div>
+    <div class="sheet-actions" style="flex-direction:column; gap:8px;">
+      <a id="renewalWhatsAppBtn" class="btn primary" href="#" target="_blank" rel="noopener" style="width:100%; display:flex; align-items:center; justify-content:center; text-decoration:none;">Avisar no WhatsApp</a>
+      <button class="btn ghost" id="renewalCloseBtn" type="button" style="width:100%;">Entendi, depois eu vejo</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 </div>
 
@@ -747,6 +794,15 @@
   // (RLS) no banco, não o segredo dessa chave.
   var SUPABASE_URL = "https://eiceoetvgaquxjgheeea.supabase.co";
   var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpY2VvZXR2Z2FxdXhqZ2hlZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MzM5NzAsImV4cCI6MjEwNzEwOTk3MH0.ZkMsGNMA-p_Fiq9q-SbW2RNxUFEOb223ajmopmSa1j4";
+
+  // Dados de pagamento / contato mostrados no aviso de renovação e na tela
+  // de bloqueio. Pra trocar depois, só mexer aqui.
+  var ADMIN_PIX_KEY = "onlinemgnstore@gmail.com";
+  var ADMIN_WHATSAPP_NUMBER = "5516992515480"; // 55 + DDD + número
+  var ADMIN_WHATSAPP_MSG = "Olá! Fiz o pagamento do Saldo, pode liberar meu acesso?";
+  function adminWhatsAppLink(){
+    return "https://wa.me/" + ADMIN_WHATSAPP_NUMBER + "?text=" + encodeURIComponent(ADMIN_WHATSAPP_MSG);
+  }
 
   var sb = null;
   var currentUserId = null;
@@ -807,6 +863,12 @@
     els.authSubmitBtn = $("authSubmitBtn");
     els.authToggleBtn = $("authToggleBtn");
 
+    els.blockedScreen = $("blockedScreen");
+    $("blockedPixKey").textContent = ADMIN_PIX_KEY;
+    $("blockedWhatsAppBtn").href = adminWhatsAppLink();
+    $("blockedCopyPixBtn").addEventListener("click", function(){ copyPixKey($("blockedCopyPixBtn")); });
+    $("blockedLogoutBtn").addEventListener("click", function(){ sb.auth.signOut(); });
+
     $("prevMonth").addEventListener("click", function(){ shiftMonth(-1); });
     $("nextMonth").addEventListener("click", function(){ shiftMonth(1); });
     $("openAdd").addEventListener("click", function(){ openSheet(null); });
@@ -832,6 +894,13 @@
     els.trialOverlay = $("trialOverlay");
     $("trialCloseBtn").addEventListener("click", closeTrialPopup);
     els.trialOverlay.addEventListener("click", function(e){ if(e.target === els.trialOverlay) closeTrialPopup(); });
+
+    els.renewalOverlay = $("renewalOverlay");
+    $("renewalPixKey").textContent = ADMIN_PIX_KEY;
+    $("renewalWhatsAppBtn").href = adminWhatsAppLink();
+    $("renewalCopyPixBtn").addEventListener("click", function(){ copyPixKey($("renewalCopyPixBtn")); });
+    $("renewalCloseBtn").addEventListener("click", closeRenewalWarning);
+    els.renewalOverlay.addEventListener("click", function(e){ if(e.target === els.renewalOverlay) closeRenewalWarning(); });
 
     document.querySelectorAll(".bill-type-btn").forEach(function(btn){
       btn.addEventListener("click", function(){ setBillFormType(btn.getAttribute("data-type")); });
@@ -889,6 +958,81 @@
     try{ localStorage.setItem("saldo_trial_popup_seen", "1"); } catch(e){}
   }
 
+  function copyPixKey(btn){
+    var done = function(){
+      if(!btn) return;
+      var original = btn.textContent;
+      btn.textContent = "Copiado!";
+      setTimeout(function(){ btn.textContent = original; }, 1500);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ADMIN_PIX_KEY).then(done).catch(function(){
+        showToast("Não foi possível copiar. Copie manualmente: " + ADMIN_PIX_KEY);
+      });
+    } else {
+      showToast("Chave Pix: " + ADMIN_PIX_KEY);
+    }
+  }
+
+  function closeRenewalWarning(){
+    if(els.renewalOverlay) els.renewalOverlay.classList.remove("open");
+  }
+
+  function showRenewalWarning(daysLeft){
+    if(!els.renewalOverlay) return;
+    var msg = daysLeft <= 0
+      ? "Seu período de teste grátis vence hoje. Para continuar usando o Saldo sem interrupção, faça o pagamento via Pix e avise pelo WhatsApp."
+      : "Seu período de teste grátis vence amanhã. Para continuar usando o Saldo sem interrupção, faça o pagamento via Pix e avise pelo WhatsApp.";
+    var titleEl = $("renewalTitle");
+    var msgEl = $("renewalMsg");
+    if(titleEl) titleEl.textContent = daysLeft <= 0 ? "⏰ Seu teste vence hoje" : "⏰ Seu teste vence amanhã";
+    if(msgEl) msgEl.textContent = msg;
+    els.renewalOverlay.classList.add("open");
+  }
+
+  function showBlockedScreen(reason){
+    var titleEl = $("blockedTitle");
+    var msgEl = $("blockedMsg");
+    if(reason === "manual"){
+      if(titleEl) titleEl.textContent = "Acesso bloqueado";
+      if(msgEl) msgEl.textContent = "Seu acesso ao Saldo foi bloqueado pelo administrador. Para reativar, faça o pagamento via Pix e avise pelo WhatsApp.";
+    } else {
+      if(titleEl) titleEl.textContent = "Período de teste encerrado";
+      if(msgEl) msgEl.textContent = "Seu período de teste grátis terminou. Para continuar usando o Saldo, faça o pagamento via Pix e avise pelo WhatsApp que o acesso pode ser liberado.";
+    }
+    els.authScreen.style.display = "none";
+    els.appRoot.style.display = "none";
+    els.blockedScreen.style.display = "flex";
+  }
+
+  // Busca o status de acesso do usuário logado (quando venceu, se foi
+  // bloqueado manualmente) e decide se mostra a tela de bloqueio, o aviso
+  // de renovação, ou nada (acesso normal). Chamado toda vez que a pessoa
+  // entra no app.
+  function checkAccessStatus(){
+    if(!sb || !currentUserId) return;
+    sb.from("profiles").select("access_until, blocked").eq("id", currentUserId).maybeSingle()
+      .then(function(res){
+        if(res.error || !res.data) return; // tabela/linha ainda não existe — não bloqueia por via das dúvidas
+        var profile = res.data;
+        if(profile.blocked){
+          showBlockedScreen("manual");
+          return;
+        }
+        var accessUntil = new Date(profile.access_until);
+        var msLeft = accessUntil.getTime() - Date.now();
+        if(msLeft <= 0){
+          showBlockedScreen("expired");
+          return;
+        }
+        var daysLeft = Math.floor(msLeft / (1000*60*60*24));
+        if(daysLeft <= 1){
+          showRenewalWarning(daysLeft);
+        }
+      })
+      .catch(function(){ /* falha de rede — não bloqueia o uso offline */ });
+  }
+
   function initAuth(){
     if(!supabaseConfigured()){
       setAuthMode("signin");
@@ -927,6 +1071,7 @@
         currentUserId = session.user.id;
         showAppScreen();
         startApp();
+        checkAccessStatus();
       } else {
         setAuthMode("signin");
         showAuthScreen();
@@ -963,6 +1108,7 @@
         currentUserId = session.user.id;
         showAppScreen();
         startApp();
+        checkAccessStatus();
       } else if(authMode === "signup"){
         // projeto com confirmação de e-mail ativada — sem sessão ainda
         setAuthMsg("Conta criada! Verifique seu e-mail para confirmar antes de entrar.", true);
