@@ -1,0 +1,3239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Saldo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F6F54">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Saldo">
+<style>
+  :root{
+    --bg:#F3F5F1;
+    --surface:#FFFFFF;
+    --surface-alt:#E9ECE4;
+    --ink:#16261E;
+    --ink-muted:#5C6D62;
+    --ink-faint:#8B9A8F;
+    --border:#DCE1D6;
+    --accent:#1F6F54;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#E3F0E9;
+    --income:#2F8F5B;
+    --income-soft:#E3F3E8;
+    --expense:#BE5433;
+    --expense-soft:#F7E7E0;
+    --shadow: 0 1px 2px rgba(22,38,30,0.06), 0 8px 24px -12px rgba(22,38,30,0.18);
+    --avatar-a:#1F6F54; --avatar-b:#B5842A; --avatar-c:#BE5433; --avatar-d:#3E6B8F;
+    --avatar-e:#7A5CB0; --avatar-f:#5C6D62; --avatar-g:#2E8B96; --avatar-h:#B0527A;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1713;
+      --surface:#182420;
+      --surface-alt:#1E2C25;
+      --ink:#EAF0EA;
+      --ink-muted:#9FB3A5;
+      --ink-faint:#6D8577;
+      --border:#2A3A31;
+      --accent:#4FBF8D;
+      --accent-ink:#0F1713;
+      --accent-soft:#1C3428;
+      --income:#57CB8F;
+      --income-soft:#1B3428;
+      --expense:#E3906E;
+      --expense-soft:#3A241C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+      --avatar-a:#4FBF8D; --avatar-b:#D8AE55; --avatar-c:#E3906E; --avatar-d:#7FAAD1;
+      --avatar-e:#B79BE0; --avatar-f:#9FB3A5; --avatar-g:#6FC2CE; --avatar-h:#DB93B4;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1713;
+    --surface:#182420;
+    --surface-alt:#1E2C25;
+    --ink:#EAF0EA;
+    --ink-muted:#9FB3A5;
+    --ink-faint:#6D8577;
+    --border:#2A3A31;
+    --accent:#4FBF8D;
+    --accent-ink:#0F1713;
+    --accent-soft:#1C3428;
+    --income:#57CB8F;
+    --income-soft:#1B3428;
+    --expense:#E3906E;
+    --expense-soft:#3A241C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+    --avatar-a:#4FBF8D; --avatar-b:#D8AE55; --avatar-c:#E3906E; --avatar-d:#7FAAD1;
+    --avatar-e:#B79BE0; --avatar-f:#9FB3A5; --avatar-g:#6FC2CE; --avatar-h:#DB93B4;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Manrope',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .shell{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    padding-bottom:96px;
+    position:relative;
+  }
+  .num{ font-variant-numeric: tabular-nums; }
+  .mono{ font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric: tabular-nums; }
+
+  /* header */
+  header{
+    padding:20px 20px 8px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:8px;
+    font-family:'Fraunces',serif; font-weight:600; font-size:15px;
+    color:var(--ink-muted); letter-spacing:0.02em; text-transform:uppercase; font-size:12px;
+    margin-bottom:14px;
+  }
+  .brand svg{ width:16px; height:16px; flex:none; }
+
+  .month-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .month-nav .label{
+    font-family:'Fraunces',serif; font-weight:500; font-size:18px;
+    text-transform:capitalize;
+  }
+  .icon-btn{
+    width:36px; height:36px; border-radius:999px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex:none;
+  }
+  .icon-btn:active{ transform:scale(0.94); }
+  .icon-btn svg{ width:16px; height:16px; }
+
+  .balance-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:22px 20px;
+    box-shadow:var(--shadow);
+    margin-bottom:14px;
+  }
+  .balance-card .eyebrow{
+    font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-faint); font-weight:700;
+    margin-bottom:6px;
+  }
+  .balance-figure{
+    font-family:'Fraunces',serif; font-weight:500; font-size:38px; line-height:1.05;
+    letter-spacing:-0.01em;
+  }
+  .tiles{ display:flex; gap:10px; margin-top:16px; }
+  .tile{
+    flex:1; border-radius:14px; padding:12px 14px;
+  }
+  .tile.in{ background:var(--income-soft); }
+  .tile.out{ background:var(--expense-soft); }
+  .tile .t-label{ display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; margin-bottom:4px; }
+  .tile.in .t-label{ color:var(--income); }
+  .tile.out .t-label{ color:var(--expense); }
+  .tile .t-value{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:16px; }
+  .dot{ width:7px; height:7px; border-radius:999px; flex:none; }
+  .dot.in{ background:var(--income); }
+  .dot.out{ background:var(--expense); }
+
+  section{ padding:0 20px; margin-top:26px; }
+  .section-title{
+    font-size:12px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:12px;
+  }
+  .list-section-label{
+    font-size:11.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-faint); margin:4px 0 10px; padding-top:10px; border-top:1px dashed var(--border);
+  }
+  .list-section-label:first-child{ border-top:none; padding-top:0; }
+
+  /* category breakdown */
+  .cat-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; cursor:pointer; }
+  .cat-row:last-child{ margin-bottom:0; }
+  .cat-chevron{ width:15px; height:15px; flex:none; color:var(--ink-faint); transition:transform 0.15s ease; }
+  .cat-row.expanded .cat-chevron{ transform:rotate(90deg); color:var(--ink-muted); }
+  .cat-detail{
+    margin:2px 0 14px 38px; border-left:2px solid var(--border); padding-left:12px;
+    display:flex; flex-direction:column; gap:9px;
+  }
+  .cat-detail-empty{ font-size:12px; color:var(--ink-faint); }
+  .cat-detail-row{ display:flex; align-items:center; gap:10px; font-size:12.5px; cursor:pointer; }
+  .cat-detail-date{ color:var(--ink-faint); flex:none; width:32px; }
+  .cat-detail-note{
+    flex:1; min-width:0; color:var(--ink-muted); white-space:nowrap;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+  }
+  .cat-detail-note::-webkit-scrollbar{ display:none; }
+  .cat-detail-amount{ color:var(--ink); font-weight:600; flex:none; }
+  .avatar{
+    width:28px; height:28px; border-radius:999px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:12px; font-family:'Manrope',sans-serif;
+  }
+  .cat-info{ flex:1; min-width:0; }
+  .cat-top{ display:flex; justify-content:space-between; gap:8px; margin-bottom:5px; }
+  .cat-name{ font-size:13.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cat-amount{ font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-muted); flex:none; }
+  .bar-track{ height:6px; border-radius:999px; background:var(--surface-alt); overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:999px; background:var(--expense); }
+
+  .empty-cats{ color:var(--ink-faint); font-size:13.5px; }
+
+  .salary-box{
+    background:var(--surface-alt); border-radius:12px; padding:12px 14px; font-size:13px;
+  }
+  .salary-box .row{ display:flex; justify-content:space-between; padding:3px 0; color:var(--ink-muted); }
+  .salary-box .row .v{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; }
+  .salary-box .row.total{ color:var(--ink); font-weight:800; border-top:1px dashed var(--border); margin-top:6px; padding-top:8px; font-size:13.5px; }
+  .salary-box .hint{ margin-top:8px; font-size:11px; line-height:1.4; color:var(--ink-faint); }
+
+  .chip-row{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; margin-bottom:4px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .chip-row::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex:none; display:flex; align-items:baseline; gap:6px;
+    border:1.5px solid var(--border); background:var(--surface); color:var(--ink-muted);
+    border-radius:999px; padding:7px 13px; font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  .chip .chip-amt{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11.5px; }
+  .chip.active{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+
+  /* dashboard & relatórios */
+  .section-title-flat{
+    font-size:12px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:12px;
+  }
+  .dash-section{ margin-bottom:28px; }
+  .dash-section:last-child{ margin-bottom:4px; }
+  .report-empty{ color:var(--ink-faint); font-size:13px; }
+  .report-caption{ font-size:11.5px; color:var(--ink-faint); margin-top:10px; line-height:1.45; }
+
+  .stack-bar{ display:flex; height:20px; border-radius:10px; overflow:hidden; background:var(--surface-alt); gap:2px; }
+  .stack-seg{ height:100%; }
+  .legend-list{ display:flex; flex-direction:column; }
+  .legend-row{ display:flex; align-items:center; gap:8px; font-size:12.5px; padding:4px 0; }
+  .legend-dot{ display:inline-block; width:10px; height:10px; border-radius:999px; flex:none; vertical-align:middle; }
+  .legend-name{ flex:1; min-width:0; color:var(--ink-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .legend-pct{ color:var(--ink-faint); font-size:11px; width:36px; text-align:right; flex:none; }
+  .legend-amt{ color:var(--ink); font-weight:600; font-size:12.5px; flex:none; margin-left:4px; }
+  .legend-chip{ display:inline-flex; align-items:center; gap:6px; margin-right:16px; color:var(--ink-muted); font-size:12px; font-weight:700; }
+  .chart-legend{ margin-bottom:10px; }
+
+  .evo-svg{ width:100%; height:140px; overflow:visible; display:block; }
+  .evo-month-label{ font-size:8px; fill:var(--ink-faint); font-family:'Manrope',sans-serif; text-transform:capitalize; }
+
+  .donut-wrap{ display:flex; justify-content:center; margin:4px 0; }
+  .donut-svg{ width:180px; height:180px; }
+  .donut-center-label{ font-size:11px; fill:var(--ink-faint); font-family:'Manrope',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+  .donut-center-amt{ font-size:15px; fill:var(--ink); font-family:'IBM Plex Mono',monospace; font-weight:700; }
+
+  .pay-bar-row{ margin-bottom:12px; }
+  .pay-bar-row:last-child{ margin-bottom:0; }
+  .pay-bar-top{ display:flex; justify-content:space-between; gap:8px; font-size:13px; margin-bottom:5px; color:var(--ink); }
+
+  .report-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  .report-table th{ text-align:left; color:var(--ink-faint); font-weight:800; font-size:10.5px; letter-spacing:0.04em; text-transform:uppercase; padding-bottom:7px; border-bottom:1px solid var(--border); }
+  .report-table th.num, .report-table td.num{ text-align:right; }
+  .report-table td{ padding:8px 0; border-bottom:1px solid var(--border); color:var(--ink); }
+  .report-table tr:last-child td{ border-bottom:none; }
+  .delta-up{ color:var(--expense); }
+  .delta-down{ color:var(--income); }
+
+  .rank-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+  .rank-row:last-child{ border-bottom:none; }
+  .rank-num{ width:18px; flex:none; font-weight:800; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; font-size:13px; }
+
+  /* transaction list */
+  .day-group{ margin-bottom:18px; }
+  .day-heading{
+    font-size:12px; font-weight:700; color:var(--ink-faint); margin-bottom:8px;
+    text-transform:capitalize;
+  }
+  .tx-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    margin-bottom:8px; overflow:hidden;
+  }
+  .tx-row{
+    display:flex; align-items:center; gap:12px; padding:12px 14px;
+    cursor:pointer;
+  }
+  .tx-row:active{ background:var(--surface-alt); }
+  .tx-select{ width:18px; height:18px; flex:none; accent-color:var(--accent); }
+  .selection-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--surface-alt); color:var(--ink-muted); border-radius:12px;
+    padding:10px 14px; margin-bottom:12px; font-size:12.5px; font-weight:700;
+    position:sticky; top:8px; z-index:5; box-shadow:var(--shadow);
+  }
+  .selection-bar.active{ background:var(--accent-soft); color:var(--accent); }
+  .selection-right{ display:flex; align-items:center; gap:10px; }
+  .selection-sum{ font-size:14px; }
+  .selection-clear{
+    background:none; border:none; color:inherit; font:inherit; font-weight:700;
+    cursor:pointer; padding:0; text-decoration:underline;
+  }
+  .tx-main{ flex:1; min-width:0; }
+  .tx-cat{ font-size:14px; font-weight:700; }
+  .tx-note{
+    font-size:12.5px; color:var(--ink-muted); margin-top:2px; white-space:nowrap;
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+  }
+  .tx-note::-webkit-scrollbar{ display:none; }
+  .tx-amount{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14.5px; flex:none; }
+  .tx-amount.in{ color:var(--income); }
+  .tx-amount.out{ color:var(--expense); }
+  .est-tag{
+    margin-left:6px; font-size:9.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-faint); background:var(--surface-alt); padding:2px 6px; border-radius:999px; vertical-align:middle;
+  }
+
+  .bill-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .bill-row:last-child{ border-bottom:none; }
+  .bill-row .cat-info div:last-child{ font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+
+  .file-input-wrap{
+    border:1.5px dashed var(--border); border-radius:12px; padding:16px; text-align:center;
+    background:var(--surface-alt);
+  }
+  .file-input-wrap input[type="file"]{ font-size:12.5px; color:var(--ink-muted); max-width:100%; }
+  .import-status{ font-size:12.5px; color:var(--ink-muted); margin-top:10px; min-height:16px; }
+  .import-progress-wrap{ margin-top:10px; }
+  .import-progress-track{
+    height:8px; border-radius:999px; background:var(--surface); border:1px solid var(--border); overflow:hidden;
+  }
+  .import-progress-fill{
+    height:100%; border-radius:999px; background:var(--accent); width:0%; transition:width 0.2s ease;
+  }
+  .import-progress-label{
+    margin-top:4px; font-size:11px; font-weight:700; color:var(--ink-muted); text-align:right;
+  }
+  .import-row{ display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .import-row:last-child{ border-bottom:none; }
+  .import-row input[type="checkbox"]{ width:18px; height:18px; margin-top:2px; flex:none; accent-color:var(--accent); }
+  .import-info{ flex:1; min-width:0; }
+  .import-top{ display:flex; justify-content:space-between; gap:8px; align-items:baseline; }
+  .import-title{ font-size:13px; font-weight:600; }
+  .import-sub{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-faint); margin-top:4px; }
+  .import-cat{
+    flex:1; min-width:0; border:1px solid var(--border); background:var(--bg); color:var(--ink);
+    border-radius:8px; padding:5px 8px; font:inherit; font-size:11.5px;
+  }
+
+  .empty-state{
+    text-align:center; padding:36px 20px; color:var(--ink-faint);
+  }
+  .empty-state svg{ width:40px; height:40px; margin-bottom:10px; opacity:0.6; }
+  .empty-state p{ font-size:13.5px; margin:0; }
+
+  .footer-note{
+    text-align:center; font-size:11.5px; color:var(--ink-faint); padding:22px 20px 0;
+  }
+  .footer-note button{
+    background:none; border:none; color:var(--accent); font:inherit; font-weight:700; cursor:pointer; padding:0;
+  }
+
+  /* fab */
+  .fab{
+    position:fixed; left:50%; bottom:22px; transform:translateX(calc(-50% + 0px));
+    max-width:480px; width:calc(100% - 40px);
+    display:flex; justify-content:flex-end; pointer-events:none;
+  }
+  .fab-btn{
+    pointer-events:auto;
+    width:58px; height:58px; border-radius:999px; border:none;
+    background:var(--accent); color:var(--accent-ink);
+    box-shadow:0 10px 24px -8px rgba(31,111,84,0.55);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .fab-btn svg{ width:24px; height:24px; }
+  .fab-btn:active{ transform:scale(0.94); }
+
+  /* sheet */
+  .overlay{
+    position:fixed; top:0; left:0; right:0; height:100%;
+    background:rgba(15,23,19,0.45);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity 0.18s ease;
+    z-index:20;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .sheet{
+    background:var(--surface); width:100%; max-width:480px;
+    border-radius:22px 22px 0 0;
+    transform:translateY(100%); transition:transform 0.22s ease;
+    max-height:88vh;
+    display:flex; flex-direction:column;
+  }
+  .overlay.open .sheet{ transform:translateY(0); }
+  .sheet-body{
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    flex:1 1 auto; min-height:0;
+    padding:18px 20px 4px;
+  }
+  .sheet-handle{ width:36px; height:4px; border-radius:999px; background:var(--border); margin:0 auto 16px; }
+  .sheet-title{ font-family:'Fraunces',serif; font-size:20px; font-weight:500; margin-bottom:16px; }
+
+  .voice-btn{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+    border:1.5px dashed var(--border); background:var(--surface-alt); color:var(--ink);
+    border-radius:12px; padding:11px 0; font:inherit; font-weight:700; font-size:13.5px;
+    cursor:pointer; margin-bottom:12px;
+  }
+  .voice-btn svg{ width:17px; height:17px; flex:none; }
+  .voice-btn.listening{ border-style:solid; border-color:var(--expense); color:var(--expense); background:var(--expense-soft); }
+  .voice-btn.listening svg{ animation:pulse 1s ease-in-out infinite; }
+  .voice-btn.processing{ border-style:solid; border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+  .voice-btn:active{ transform:scale(0.98); }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+
+  .dictate-wrap{ margin-bottom:16px; }
+  .dictate-row{ display:flex; gap:8px; }
+  .dictate-row input{
+    flex:1; min-width:0; border:1px solid var(--border); background:var(--bg); color:var(--ink);
+    border-radius:11px; padding:11px 12px; font:inherit; font-size:14px;
+  }
+  .dictate-row input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .dictate-row button{
+    flex:none; border:none; border-radius:11px; padding:0 16px;
+    background:var(--accent); color:var(--accent-ink); font:inherit; font-weight:700; font-size:13px;
+    cursor:pointer;
+  }
+  .dictate-row button:disabled{ opacity:0.6; }
+  .dictate-row button:active{ transform:scale(0.97); }
+  .dictate-hint{ font-size:11px; color:var(--ink-faint); margin-top:6px; line-height:1.4; }
+
+  .segmented{
+    display:flex; background:var(--surface-alt); border-radius:12px; padding:4px; margin-bottom:16px;
+  }
+  .segmented button{
+    flex:1; border:none; background:transparent; padding:9px 0; border-radius:9px;
+    font:inherit; font-weight:700; font-size:13.5px; color:var(--ink-muted); cursor:pointer;
+  }
+  .segmented button.active.in{ background:var(--income-soft); color:var(--income); }
+  .segmented button.active.out{ background:var(--expense-soft); color:var(--expense); }
+
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; font-weight:700; color:var(--ink-muted); margin-bottom:6px; }
+  .field input{
+    width:100%; border:1px solid var(--border); background:var(--bg); color:var(--ink);
+    border-radius:11px; padding:12px 13px; font:inherit; font-size:15px;
+  }
+  .field input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .amount-wrap{ position:relative; }
+  .amount-wrap span{
+    position:absolute; left:13px; top:50%; transform:translateY(-50%);
+    color:var(--ink-muted); font-weight:600; font-size:15px;
+  }
+  .amount-wrap input{ padding-left:34px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
+
+  .sheet-actions{
+    display:flex; gap:10px; flex:none;
+    padding:12px 20px calc(12px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border); background:var(--surface);
+  }
+  .btn{
+    flex:1; border:none; border-radius:12px; padding:13px 0; font:inherit; font-weight:700; font-size:14.5px;
+    cursor:pointer;
+  }
+  .btn.primary{ background:var(--accent); color:var(--accent-ink); }
+  .btn.ghost{ background:var(--surface-alt); color:var(--ink); }
+  .btn.danger{ background:var(--expense-soft); color:var(--expense); }
+  .btn:active{ transform:scale(0.98); }
+
+  .toast{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:16px;
+    font-size:13px; font-weight:600; opacity:0; transition:all 0.25s ease; pointer-events:none;
+    z-index:30; max-width:calc(100% - 56px); width:max-content; text-align:center; line-height:1.35;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .loading{ padding:60px 20px; text-align:center; color:var(--ink-faint); font-size:13.5px; }
+
+  /* tela de login/cadastro */
+  .auth-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .auth-card{ background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:28px 24px; width:100%; max-width:380px; box-shadow:var(--shadow); }
+  .auth-msg{ font-size:12.5px; color:var(--expense); margin:10px 0 2px; min-height:14px; line-height:1.4; }
+  .auth-msg.ok{ color:var(--income); }
+</style>
+</head>
+<body>
+
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="brand" style="justify-content:center;margin-bottom:22px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14.5" r="1"/></svg>
+      Saldo
+    </div>
+    <div class="sheet-title" id="authTitle" style="text-align:center;">Entrar</div>
+    <div class="field">
+      <label for="authEmail">E-mail</label>
+      <input id="authEmail" type="email" autocomplete="email" placeholder="voce@exemplo.com">
+    </div>
+    <div class="field">
+      <label for="authPassword">Senha</label>
+      <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <div class="auth-msg" id="authMsg"></div>
+    <button class="btn primary" id="authSubmitBtn" type="button" style="width:100%;margin-top:8px;">Entrar</button>
+    <button class="btn ghost" id="authToggleBtn" type="button" style="width:100%;margin-top:8px;">Não tem conta? Criar conta</button>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none;">
+<div class="shell" id="shell">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14.5" r="1"/></svg>
+      Saldo
+    </div>
+    <div class="month-nav">
+      <button class="icon-btn" id="prevMonth" aria-label="Mês anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="label" id="monthLabel">—</div>
+      <button class="icon-btn" id="nextMonth" aria-label="Próximo mês">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+
+    <div class="balance-card">
+      <div class="eyebrow">Saldo do mês</div>
+      <div class="balance-figure num" id="balanceFigure">R$ 0,00</div>
+      <div class="tiles">
+        <div class="tile in">
+          <div class="t-label"><span class="dot in"></span>Receitas</div>
+          <div class="t-value" id="incomeTotal">R$ 0,00</div>
+        </div>
+        <div class="tile out">
+          <div class="t-label"><span class="dot out"></span>Despesas</div>
+          <div class="t-value" id="expenseTotal">R$ 0,00</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="content">
+    <div class="loading">Carregando…</div>
+  </div>
+
+  <div class="footer-note" id="footerNote"></div>
+</div>
+
+<div class="fab">
+  <button class="fab-btn" id="openAdd" aria-label="Adicionar lançamento">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheetTitle">Novo lançamento</div>
+    <button type="button" class="voice-btn" id="voiceBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 19v3"/></svg>
+      <span id="voiceLabel">Preencher por voz</span>
+    </button>
+    <div class="dictate-wrap">
+      <div class="dictate-row">
+        <input type="text" id="fFreeText" placeholder="Ex.: gastei 45 no mercado, recebi 3000 de salário…">
+        <button type="button" id="interpretBtn">Interpretar</button>
+      </div>
+      <div class="dictate-hint">No iPhone: toque no campo e use o microfone do teclado para ditar, depois toque em Interpretar.</div>
+    </div>
+    <div class="segmented">
+      <button type="button" class="type-btn in active" data-type="income">Receita</button>
+      <button type="button" class="type-btn out" data-type="expense">Despesa</button>
+    </div>
+    <div class="field">
+      <label for="fAmount">Valor</label>
+      <div class="amount-wrap">
+        <span>R$</span>
+        <input id="fAmount" type="text" inputmode="decimal" placeholder="0,00">
+      </div>
+    </div>
+    <div class="field">
+      <label for="fCategory">Categoria</label>
+      <input id="fCategory" type="text" list="catList" placeholder="Ex.: Alimentação, Combustível…">
+      <datalist id="catList"></datalist>
+    </div>
+    <div class="field" id="salaryBreakdownWrap" style="display:none;">
+      <label>Descontos estimados</label>
+      <div class="salary-box" id="salaryBreakdown"></div>
+    </div>
+    <div class="field">
+      <label for="fPayment">Forma de pagamento (opcional)</label>
+      <input id="fPayment" type="text" list="paymentList" placeholder="Ex.: Cartão de Crédito">
+      <datalist id="paymentList"></datalist>
+    </div>
+    <div class="field">
+      <label for="fNote">Descrição (opcional)</label>
+      <input id="fNote" type="text" placeholder="Ex.: Mercado do mês">
+    </div>
+    <div class="field">
+      <label for="fDate">Data</label>
+      <input id="fDate" type="date">
+    </div>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="cancelBtn" type="button">Cancelar</button>
+      <button class="btn danger" id="deleteBtn" type="button" style="display:none;">Excluir</button>
+      <button class="btn primary" id="saveBtn" type="button">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="billsOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Contas fixas</div>
+    <div id="billsList"></div>
+    <div class="field" style="margin-top:16px;">
+      <label for="bName">Nome</label>
+      <input id="bName" type="text" placeholder="Ex.: Energia, Casa…">
+    </div>
+    <div class="segmented">
+      <button type="button" class="bill-type-btn out active" data-type="expense">Eu pago</button>
+      <button type="button" class="bill-type-btn in" data-type="income">Eu recebo</button>
+    </div>
+    <div class="field">
+      <label for="bCategory">Categoria</label>
+      <input id="bCategory" type="text" list="catList" placeholder="Ex.: Contas">
+    </div>
+    <div class="field">
+      <label for="bAmount">Valor estimado</label>
+      <div class="amount-wrap">
+        <span>R$</span>
+        <input id="bAmount" type="text" inputmode="decimal" placeholder="0,00">
+      </div>
+    </div>
+    <div class="field">
+      <label for="bDueDay">Dia de vencimento</label>
+      <input id="bDueDay" type="number" min="1" max="31" placeholder="Ex.: 15">
+    </div>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="billsCancelBtn" type="button">Fechar</button>
+      <button class="btn danger" id="billsDeleteBtn" type="button" style="display:none;">Excluir</button>
+      <button class="btn primary" id="billsSaveBtn" type="button">Adicionar conta</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="importOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Importar fatura</div>
+    <div class="file-input-wrap">
+      <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls">
+      <div class="import-progress-wrap" id="importProgressWrap" style="display:none;">
+        <div class="import-progress-track"><div class="import-progress-fill" id="importProgressFill"></div></div>
+        <div class="import-progress-label" id="importProgressLabel">0%</div>
+      </div>
+      <div class="import-status" id="importStatus">Selecione o arquivo CSV ou Excel exportado do cartão.</div>
+      <details id="importDebugWrap" style="display:none;margin-top:8px;">
+        <summary style="cursor:pointer;font-size:12px;color:var(--ink-muted);">Detalhes técnicos (mande um print daqui se pedir ajuda)</summary>
+        <pre id="importDebugText" style="white-space:pre-wrap;word-break:break-word;font-size:11px;background:var(--surface-alt);padding:8px;border-radius:8px;margin-top:6px;max-height:240px;overflow:auto;"></pre>
+      </details>
+    </div>
+    <div id="importReviewWrap" style="display:none;">
+      <div class="field" style="margin-top:16px;">
+        <label for="importPayment">Forma de pagamento</label>
+        <input id="importPayment" type="text" list="paymentList" value="Cartão de Crédito">
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label for="importMonth">Lançar no mês de</label>
+        <input id="importMonth" type="month">
+        <div style="font-size:12px;color:var(--ink-muted);margin-top:4px;">Todos os itens desta importação (e as parcelas seguintes) caem a partir deste mês — ajuste se a fatura for paga em outro mês.</div>
+      </div>
+      <div class="section-title" style="margin-top:18px;margin-bottom:8px;">Revisar lançamentos (<span id="importCount">0</span>)</div>
+      <div id="importList"></div>
+    </div>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="importCancelBtn" type="button">Fechar</button>
+      <button class="btn primary" id="importConfirmBtn" type="button" style="display:none;">Confirmar importação</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="dashboardOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Dashboard</div>
+    <div id="dashboardContent"></div>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="dashboardCloseBtn" type="button">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="reportsOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Relatórios</div>
+    <div id="reportsContent"></div>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn ghost" id="reportsCloseBtn" type="button">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="trialOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🎉 Grátis por 30 dias</div>
+    <p style="color:var(--ink-muted); font-size:14px; line-height:1.55; margin:0 0 4px;">
+      Você está no período de testes do Saldo — totalmente grátis por 30 dias, sem
+      cartão e sem compromisso. Aproveite para organizar seus lançamentos, contas
+      fixas e relatórios.
+    </p>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="trialCloseBtn" type="button" style="width:100%;">Entendi</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var DEFAULT_CATS = {
+    income: ["Vendas","Salário","Freelance","Investimentos","Reembolso","Outros"],
+    expense: ["Alimentação","Transporte","Combustível","Moradia","Contas","Saúde","Lazer","Compras","Assinaturas","Educação","Outros"]
+  };
+  var PAYMENT_METHODS = ["Cartão de Crédito","Cartão de Débito","Dinheiro","Pix","Boleto"];
+  var AVATAR_COLORS = ["--avatar-a","--avatar-b","--avatar-c","--avatar-d","--avatar-e","--avatar-f","--avatar-g","--avatar-h"];
+  var LOCAL_KEY = "saldo_transactions_v1";
+  var BILLS_LOCAL_KEY = "saldo_bill_templates_v1";
+
+  // ---------- configuração do Supabase ----------
+  // cole aqui a URL e a chave "anon public" do seu projeto Supabase
+  // (painel do projeto → Settings → API). A chave "anon" é pública por
+  // design — quem protege os dados de cada cliente é a regra de segurança
+  // (RLS) no banco, não o segredo dessa chave.
+  var SUPABASE_URL = "https://eiceoetvgaquxjgheeea.supabase.co";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpY2VvZXR2Z2FxdXhqZ2hlZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MzM5NzAsImV4cCI6MjEwNzEwOTk3MH0.ZkMsGNMA-p_Fiq9q-SbW2RNxUFEOb223ajmopmSa1j4";
+
+  var sb = null;
+  var currentUserId = null;
+  function supabaseConfigured(){
+    return SUPABASE_URL.indexOf("COLE_AQUI") === -1 && SUPABASE_ANON_KEY.indexOf("COLE_AQUI") === -1;
+  }
+
+  var state = {
+    backend: null,      // 'db' | 'local'
+    dbApi: null,
+    transactions: [],   // {id,type,amount,category,note,date,createdAt}
+    billTemplates: [],  // {id,name,category,estimatedAmount,dueDay}
+    pendingBillGen: {},
+    importItems: [],    // itens lidos da fatura, aguardando revisão/confirmação
+    importProgressTimer: null,
+    year: new Date().getFullYear(),
+    month: new Date().getMonth(), // 0-indexed
+    editingId: null,
+    editingBillId: null,
+    billFormType: "expense",
+    txReady: false,
+    billsReady: false,
+    formType: "income",
+    paymentFilter: null,
+    expandedCategory: null,
+    selectedTx: {}
+  };
+
+  var els = {};
+  function $(id){ return document.getElementById(id); }
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  function init(){
+    els.content = $("content");
+    els.monthLabel = $("monthLabel");
+    els.balanceFigure = $("balanceFigure");
+    els.incomeTotal = $("incomeTotal");
+    els.expenseTotal = $("expenseTotal");
+    els.overlay = $("overlay");
+    els.sheetTitle = $("sheetTitle");
+    els.fAmount = $("fAmount");
+    els.fCategory = $("fCategory");
+    els.fPayment = $("fPayment");
+    els.fNote = $("fNote");
+    els.fDate = $("fDate");
+    els.catList = $("catList");
+    els.paymentList = $("paymentList");
+    els.deleteBtn = $("deleteBtn");
+    els.toast = $("toast");
+    els.footerNote = $("footerNote");
+    els.authScreen = $("authScreen");
+    els.appRoot = $("appRoot");
+    els.authEmail = $("authEmail");
+    els.authPassword = $("authPassword");
+    els.authMsg = $("authMsg");
+    els.authTitle = $("authTitle");
+    els.authSubmitBtn = $("authSubmitBtn");
+    els.authToggleBtn = $("authToggleBtn");
+
+    $("prevMonth").addEventListener("click", function(){ shiftMonth(-1); });
+    $("nextMonth").addEventListener("click", function(){ shiftMonth(1); });
+    $("openAdd").addEventListener("click", function(){ openSheet(null); });
+    $("cancelBtn").addEventListener("click", closeSheet);
+    $("saveBtn").addEventListener("click", saveForm);
+    $("deleteBtn").addEventListener("click", deleteForm);
+    els.overlay.addEventListener("click", function(e){ if(e.target === els.overlay) closeSheet(); });
+
+    els.billsOverlay = $("billsOverlay");
+    $("billsCancelBtn").addEventListener("click", closeBillsSheet);
+    $("billsSaveBtn").addEventListener("click", saveBillForm);
+    $("billsDeleteBtn").addEventListener("click", deleteBillForm);
+    els.billsOverlay.addEventListener("click", function(e){ if(e.target === els.billsOverlay) closeBillsSheet(); });
+
+    els.dashboardOverlay = $("dashboardOverlay");
+    $("dashboardCloseBtn").addEventListener("click", closeDashboardSheet);
+    els.dashboardOverlay.addEventListener("click", function(e){ if(e.target === els.dashboardOverlay) closeDashboardSheet(); });
+
+    els.reportsOverlay = $("reportsOverlay");
+    $("reportsCloseBtn").addEventListener("click", closeReportsSheet);
+    els.reportsOverlay.addEventListener("click", function(e){ if(e.target === els.reportsOverlay) closeReportsSheet(); });
+
+    els.trialOverlay = $("trialOverlay");
+    $("trialCloseBtn").addEventListener("click", closeTrialPopup);
+    els.trialOverlay.addEventListener("click", function(e){ if(e.target === els.trialOverlay) closeTrialPopup(); });
+
+    document.querySelectorAll(".bill-type-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){ setBillFormType(btn.getAttribute("data-type")); });
+    });
+    document.querySelectorAll(".type-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){ setFormType(btn.getAttribute("data-type")); });
+    });
+    els.fAmount.addEventListener("input", updateSalaryBreakdown);
+    els.fCategory.addEventListener("input", updateSalaryBreakdown);
+
+    renderMonthLabel();
+    initAuth();
+    initVoice();
+    initViewportFix();
+    initImport();
+  }
+
+  // ---------- login / cadastro (Supabase Auth) ----------
+  var authMode = "signin"; // 'signin' | 'signup'
+
+  function setAuthMsg(text, ok){
+    els.authMsg.textContent = text || "";
+    els.authMsg.classList.toggle("ok", !!ok);
+  }
+
+  function setAuthMode(mode){
+    authMode = mode;
+    els.authTitle.textContent = mode === "signup" ? "Criar conta" : "Entrar";
+    els.authSubmitBtn.textContent = mode === "signup" ? "Criar conta" : "Entrar";
+    els.authToggleBtn.textContent = mode === "signup" ? "Já tem conta? Entrar" : "Não tem conta? Criar conta";
+    setAuthMsg("");
+  }
+
+  function showAuthScreen(){
+    els.authScreen.style.display = "flex";
+    els.appRoot.style.display = "none";
+  }
+  function showAppScreen(){
+    els.authScreen.style.display = "none";
+    els.appRoot.style.display = "block";
+    maybeShowTrialPopup();
+  }
+
+  // Avisa que o período de testes é grátis por 30 dias. Mostra uma vez só
+  // por aparelho/navegador (não é um bloqueio de verdade após esse prazo —
+  // é só um aviso; quem controla quem continua pagando é você, por fora).
+  function maybeShowTrialPopup(){
+    try{
+      if(localStorage.getItem("saldo_trial_popup_seen") === "1") return;
+    } catch(e){}
+    if(els.trialOverlay) els.trialOverlay.classList.add("open");
+  }
+  function closeTrialPopup(){
+    if(els.trialOverlay) els.trialOverlay.classList.remove("open");
+    try{ localStorage.setItem("saldo_trial_popup_seen", "1"); } catch(e){}
+  }
+
+  function initAuth(){
+    if(!supabaseConfigured()){
+      setAuthMode("signin");
+      setAuthMsg("Configuração pendente: cole a URL e a chave do seu projeto Supabase no topo do arquivo (SUPABASE_URL / SUPABASE_ANON_KEY).");
+      els.authSubmitBtn.disabled = true;
+      els.authToggleBtn.disabled = true;
+      showAuthScreen();
+      return;
+    }
+    if(!window.supabase || typeof window.supabase.createClient !== "function"){
+      setAuthMsg("Não foi possível carregar a biblioteca do Supabase. Verifique sua conexão com a internet e recarregue a página.");
+      showAuthScreen();
+      return;
+    }
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    els.authToggleBtn.addEventListener("click", function(){
+      setAuthMode(authMode === "signup" ? "signin" : "signup");
+    });
+    els.authSubmitBtn.addEventListener("click", submitAuthForm);
+    [els.authEmail, els.authPassword].forEach(function(input){
+      input.addEventListener("keydown", function(e){ if(e.key === "Enter") submitAuthForm(); });
+    });
+
+    sb.auth.onAuthStateChange(function(event){
+      // qualquer transição real de login/logout recarrega a página — o
+      // getSession() abaixo, no próximo carregamento, decide a tela certa.
+      // Evita ter dois caminhos (pós-login e pós-reload) com estados
+      // diferentes pra manter sincronizados.
+      if(event === "SIGNED_OUT"){ location.reload(); }
+    });
+
+    sb.auth.getSession().then(function(res){
+      var session = res.data && res.data.session;
+      if(session && session.user){
+        currentUserId = session.user.id;
+        showAppScreen();
+        startApp();
+      } else {
+        setAuthMode("signin");
+        showAuthScreen();
+      }
+    });
+  }
+
+  function submitAuthForm(){
+    var email = (els.authEmail.value || "").trim();
+    var password = els.authPassword.value || "";
+    if(!email || !password){
+      setAuthMsg("Preencha e-mail e senha.");
+      return;
+    }
+    if(password.length < 6){
+      setAuthMsg("A senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
+    els.authSubmitBtn.disabled = true;
+    setAuthMsg(authMode === "signup" ? "Criando conta…" : "Entrando…");
+
+    var action = authMode === "signup"
+      ? sb.auth.signUp({ email: email, password: password })
+      : sb.auth.signInWithPassword({ email: email, password: password });
+
+    action.then(function(res){
+      els.authSubmitBtn.disabled = false;
+      if(res.error){
+        setAuthMsg(res.error.message || "Não foi possível completar. Tente de novo.");
+        return;
+      }
+      var session = res.data && res.data.session;
+      if(session && session.user){
+        currentUserId = session.user.id;
+        showAppScreen();
+        startApp();
+      } else if(authMode === "signup"){
+        // projeto com confirmação de e-mail ativada — sem sessão ainda
+        setAuthMsg("Conta criada! Verifique seu e-mail para confirmar antes de entrar.", true);
+      } else {
+        setAuthMsg("Não foi possível entrar. Tente de novo.");
+      }
+    }).catch(function(){
+      els.authSubmitBtn.disabled = false;
+      setAuthMsg("Falha de conexão. Verifique sua internet e tente de novo.");
+    });
+  }
+
+  // no iPhone, elementos "fixed" continuam do tamanho da tela inteira mesmo
+  // com o teclado aberto — só a área visível (visualViewport) encolhe. Sem
+  // isso, a folha (alinhada ao rodapé desse "fixed" cheio) fica com a parte
+  // de baixo (o botão Salvar) escondida atrás do teclado. Aqui a folha
+  // acompanha a altura E a posição realmente visíveis.
+  function applyViewportFix(overlayEl){
+    var vv = window.visualViewport;
+    overlayEl = overlayEl || document.querySelector(".overlay.open");
+    var sheetEl = overlayEl ? overlayEl.querySelector(".sheet") : null;
+    if(!overlayEl || !sheetEl) return;
+    if(vv){
+      overlayEl.style.height = vv.height + "px";
+      overlayEl.style.top = vv.offsetTop + "px";
+      sheetEl.style.maxHeight = Math.round(vv.height * 0.92) + "px";
+    } else {
+      overlayEl.style.height = "";
+      overlayEl.style.top = "";
+      sheetEl.style.maxHeight = "88vh";
+    }
+  }
+
+  function initViewportFix(){
+    applyViewportFix();
+    if(window.visualViewport){
+      window.visualViewport.addEventListener("resize", applyViewportFix);
+      window.visualViewport.addEventListener("scroll", applyViewportFix);
+    }
+    window.addEventListener("orientationchange", function(){ setTimeout(applyViewportFix, 250); });
+    var body = document.querySelector(".sheet-body");
+    if(body){
+      body.addEventListener("focusin", function(){ setTimeout(applyViewportFix, 300); });
+    }
+  }
+
+  // ---------- voice input ----------
+  var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var recognizer = null;
+  var voiceState = "idle"; // idle | listening | processing
+
+  function isIOS(){
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
+  function initVoice(){
+    els.voiceBtn = $("voiceBtn");
+    els.voiceLabel = $("voiceLabel");
+    // no iOS o reconhecimento de voz do navegador (Web Speech API) é, na prática,
+    // pouco confiável / não funcional mesmo com permissão concedida — então nem
+    // oferecemos esse botão lá, e usamos a ditado do teclado (campo abaixo) em vez disso.
+    if(!Recognition || isIOS()){
+      els.voiceBtn.style.display = "none";
+    } else {
+      els.voiceBtn.addEventListener("click", function(){
+        if(voiceState === "listening"){
+          recognizer && recognizer.stop();
+        } else if(voiceState === "idle"){
+          startListening();
+        }
+      });
+    }
+
+    els.fFreeText = $("fFreeText");
+    els.interpretBtn = $("interpretBtn");
+    els.interpretBtn.addEventListener("click", submitFreeText);
+    els.fFreeText.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){ e.preventDefault(); submitFreeText(); }
+    });
+  }
+
+  function submitFreeText(){
+    var text = els.fFreeText.value.trim();
+    if(!text){ showToast("Digite ou dite algo primeiro."); return; }
+    els.interpretBtn.disabled = true;
+    els.interpretBtn.textContent = "Analisando…";
+    interpretAndApply(text).then(function(){
+      els.interpretBtn.disabled = false;
+      els.interpretBtn.textContent = "Interpretar";
+      els.fFreeText.value = "";
+    });
+  }
+
+  function setVoiceState(s){
+    voiceState = s;
+    els.voiceBtn.classList.remove("listening","processing");
+    if(s === "listening"){
+      els.voiceBtn.classList.add("listening");
+      els.voiceLabel.textContent = "Ouvindo… toque para parar";
+    } else if(s === "processing"){
+      els.voiceBtn.classList.add("processing");
+      els.voiceLabel.textContent = "Analisando…";
+    } else {
+      els.voiceLabel.textContent = "Preencher por voz";
+    }
+  }
+
+  function startListening(){
+    try{
+      recognizer = new Recognition();
+    } catch(e){
+      showToast("Comando de voz indisponível neste navegador.");
+      return;
+    }
+    recognizer.lang = "pt-BR";
+    recognizer.interimResults = false;
+    recognizer.maxAlternatives = 1;
+    setVoiceState("listening");
+
+    recognizer.onresult = function(e){
+      var transcript = e.results && e.results[0] && e.results[0][0] ? e.results[0][0].transcript : "";
+      if(!transcript){ setVoiceState("idle"); return; }
+      handleTranscript(transcript);
+    };
+    recognizer.onerror = function(e){
+      setVoiceState("idle");
+      var standalone = window.navigator && window.navigator.standalone === true;
+      if(e.error === "not-allowed" || e.error === "permission-denied" || e.error === "service-not-allowed"){
+        if(standalone){
+          showToast("Voz não funciona no app instalado do iPhone. Abra o link no Safari (não pelo ícone) para usar.");
+        } else {
+          showToast("Permita o uso do microfone para usar o comando de voz.");
+        }
+      } else if(e.error === "no-speech"){
+        showToast("Não ouvi nada. Tente novamente.");
+      } else {
+        showToast("Não foi possível usar o microfone agora.");
+      }
+    };
+    recognizer.onend = function(){
+      if(voiceState === "listening") setVoiceState("idle");
+    };
+    try{ recognizer.start(); } catch(e){ setVoiceState("idle"); }
+  }
+
+  function handleTranscript(transcript){
+    setVoiceState("processing");
+    interpretAndApply(transcript).then(function(){ setVoiceState("idle"); });
+  }
+
+  // usado tanto pelo botão de voz automática (quando disponível) quanto pelo
+  // campo de texto/ditado do teclado
+  function interpretAndApply(text){
+    return parseWithClaude(text).then(function(parsed){
+      applyParsed(parsed, text);
+    }).catch(function(){
+      applyParsed(basicParse(text), text);
+    });
+  }
+
+  // interpretação simples, usada quando o recurso de IA não está disponível
+  function basicParse(transcript){
+    var n = normalizeText(transcript);
+    var isSalary = /salario/.test(n);
+    var type = isSalary || /receb|ganh|vend/.test(n) ? "income" : "expense";
+    var amount = 0;
+    var m = n.match(/(\d+(?:[.,]\d+)?)/);
+    if(m){ amount = parseAmount(m[1]); }
+    return {
+      type: type,
+      amount: amount,
+      category: isSalary ? "Salário" : "",
+      paymentMethod: detectPaymentMethod(transcript),
+      note: isSalary ? "" : transcript,
+      date: isoToday()
+    };
+  }
+
+  function collectAllCategories(){
+    var used = {};
+    state.transactions.forEach(function(t){ if(t.category) used[t.category] = true; });
+    var all = DEFAULT_CATS.income.concat(DEFAULT_CATS.expense).concat(Object.keys(used));
+    var seen = {}, out = [];
+    all.forEach(function(c){ if(!seen[c]){ seen[c] = true; out.push(c); } });
+    return out;
+  }
+
+  function parseWithClaude(transcript){
+    var claude = window.claude;
+    if(!claude || typeof claude.use !== "function") return Promise.reject(new Error("no-claude"));
+    return claude.use("sample").then(function(sample){
+      if(!sample) return Promise.reject(new Error("no-sample"));
+      var cats = collectAllCategories().join(", ");
+      var methods = PAYMENT_METHODS.join(", ");
+      var prompt = "Extraia um lançamento financeiro pessoal a partir da frase falada abaixo (português do Brasil) e responda APENAS com um objeto JSON, sem texto extra.\n\n"
+        + "Frase: \"" + transcript.replace(/"/g,'\\"') + "\"\n"
+        + "Data de hoje: " + isoToday() + "\n"
+        + "Categorias já usadas por este usuário, pelo TIPO de gasto ou ganho (use uma se fizer sentido, ou crie uma nova curta se nenhuma combinar; NUNCA use uma forma de pagamento como categoria): " + cats + "\n"
+        + "Formas de pagamento conhecidas: " + methods + "\n\n"
+        + "Formato exato: {\"type\": \"income\" ou \"expense\", \"amount\": numero (sem simbolo de moeda, use ponto decimal), \"category\": \"string curta descrevendo o tipo de gasto/ganho, ex.: Alimentação, Combustível, Transporte, Salário\", \"paymentMethod\": \"uma das formas de pagamento conhecidas, ou string vazia se não for mencionada\", \"note\": \"string curta ou vazio\", \"date\": \"YYYY-MM-DD\"}.\n"
+        + "Regras: se a frase falar de receber, ganhar, vender ou salário, é \"income\"; se falar de pagar, gastar ou comprar, é \"expense\". A categoria descreve PARA QUE foi o gasto (alimentação, combustível, etc.), nunca a forma de pagamento. Se a frase mencionar salário, use exatamente a categoria \"Salário\" e informe o valor BRUTO (antes de descontos) em \"amount\" — os descontos de INSS e IRRF são calculados depois, à parte. Se a frase mencionar cartão de crédito, cartão de débito, dinheiro, pix ou boleto, preencha \"paymentMethod\" com esse valor exato — isso é separado da categoria. Se não houver data explícita, use a data de hoje.";
+      return sample.json(prompt, {modelTier:"quick"});
+    });
+  }
+
+  function normalizeText(s){
+    return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+  }
+  function detectPaymentMethod(transcript){
+    var n = normalizeText(transcript);
+    if(n.indexOf("cartao de credito") > -1 || n.indexOf("credito") > -1) return "Cartão de Crédito";
+    if(n.indexOf("cartao de debito") > -1 || n.indexOf("debito") > -1) return "Cartão de Débito";
+    if(n.indexOf("pix") > -1) return "Pix";
+    if(n.indexOf("boleto") > -1) return "Boleto";
+    if(n.indexOf("dinheiro") > -1 || n.indexOf("especie") > -1) return "Dinheiro";
+    return "";
+  }
+  function applyParsed(parsed, transcript){
+    if(!parsed || typeof parsed !== "object"){
+      els.fNote.value = els.fNote.value || transcript;
+      showToast("Não consegui interpretar. Confira os campos.");
+      return;
+    }
+    var type = parsed.type === "income" ? "income" : "expense";
+    setFormType(type);
+    var amt = parseFloat(parsed.amount);
+    if(!isNaN(amt) && amt > 0){ els.fAmount.value = String(amt).replace(".", ","); }
+    if(parsed.category){ els.fCategory.value = String(parsed.category).slice(0,40); }
+    if(parsed.note){ els.fNote.value = String(parsed.note).slice(0,120); }
+    els.fDate.value = /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : isoToday();
+
+    // forma de pagamento: usa a detectada por palavra-chave como garantia,
+    // caindo para a que a IA identificou quando a fala não citar nenhuma
+    var detected = detectPaymentMethod(transcript);
+    els.fPayment.value = detected || (parsed.paymentMethod ? String(parsed.paymentMethod).slice(0,30) : "");
+    updateSalaryBreakdown();
+
+    showToast("Preenchido — confira e salve.");
+  }
+
+  // ---------- storage ----------
+  // troca entre nomes de campo "camelCase" (como o resto do app já espera,
+  // igual ao antigo backend) e colunas "snake_case" (convenção do Postgres)
+  function camelToSnake(s){ return s.replace(/[A-Z]/g, function(c){ return "_" + c.toLowerCase(); }); }
+  function snakeToCamel(s){ return s.replace(/_([a-z])/g, function(_,c){ return c.toUpperCase(); }); }
+
+  // adaptador: implementa a mesma API (parecida com Firestore) que o resto
+  // do app já usa — collection().add/orderBy/limit/onSnapshot, doc().set/
+  // update/delete — só que por baixo conversa com uma tabela do Supabase,
+  // sempre filtrada pelo usuário logado. Assim, nenhuma outra função do app
+  // (importação, parcelas, contas fixas, dashboard…) precisou mudar.
+  function makeSupabaseDb(client, userId){
+    // uma única "assinatura" guardada por tabela (preenchida quando
+    // subscribeDb()/subscribeBillTemplates() chamam onSnapshot no início) —
+    // é nela que add/set/update/delete se apoiam pra atualizar a tela
+    // depois de qualquer escrita, de onde quer que ela venha
+    var subs = {};
+
+    function toRow(data){
+      var row = {};
+      Object.keys(data).forEach(function(k){ row[camelToSnake(k)] = data[k]; });
+      return row;
+    }
+    function fromRow(row){
+      var obj = {};
+      Object.keys(row).forEach(function(k){
+        if(k === "user_id") return;
+        obj[snakeToCamel(k)] = row[k];
+      });
+      return obj;
+    }
+    function wrap(builder){
+      // o query builder do supabase-js já é "thenable" — envolver garante
+      // um Promise de verdade (com .catch) e transforma erro em rejeição
+      return Promise.resolve(builder).then(function(res){
+        if(res && res.error) throw res.error;
+        return res;
+      });
+    }
+    function refetchTable(table){
+      var sub = subs[table];
+      if(!sub) return;
+      var q = client.from(table).select("*").eq("user_id", userId);
+      if(sub.orderField) q = q.order(camelToSnake(sub.orderField), { ascending: !sub.orderDesc });
+      if(sub.limit) q = q.limit(sub.limit);
+      q.then(function(res){
+        if(res.error){ sub.onError && sub.onError(res.error); return; }
+        sub.onNext({ docs: res.data.map(function(row){
+          return { id: row.id, data: function(){ return fromRow(row); } };
+        }) });
+      });
+    }
+
+    return {
+      collection: function(table){
+        var pending = { orderField: null, orderDesc: true, limit: null };
+        var api = {
+          add: function(data){
+            var row = toRow(data);
+            row.user_id = userId;
+            return wrap(client.from(table).insert(row)).then(function(res){ refetchTable(table); return res; });
+          },
+          orderBy: function(field, dir){ pending.orderField = field; pending.orderDesc = dir === "desc"; return api; },
+          limit: function(n){ pending.limit = n; return api; },
+          onSnapshot: function(onNext, onError){
+            subs[table] = { onNext: onNext, onError: onError, orderField: pending.orderField, orderDesc: pending.orderDesc, limit: pending.limit };
+            refetchTable(table);
+          }
+        };
+        return api;
+      },
+      doc: function(path){
+        var parts = path.split("/");
+        var table = parts[0], id = parts[1];
+        return {
+          set: function(data){
+            var row = toRow(data);
+            row.id = id;
+            row.user_id = userId;
+            return wrap(client.from(table).upsert(row)).then(function(res){ refetchTable(table); return res; });
+          },
+          update: function(patch){
+            var row = toRow(patch);
+            return wrap(client.from(table).update(row).eq("id", id).eq("user_id", userId)).then(function(res){ refetchTable(table); return res; });
+          },
+          delete: function(){
+            return wrap(client.from(table).delete().eq("id", id).eq("user_id", userId)).then(function(res){ refetchTable(table); return res; });
+          }
+        };
+      }
+    };
+  }
+
+  function startApp(){
+    state.backend = "db";
+    state.dbApi = makeSupabaseDb(sb, currentUserId);
+    subscribeDb();
+    subscribeBillTemplates();
+  }
+
+  function subscribeBillTemplates(){
+    try{
+      state.dbApi.collection("billTemplates").onSnapshot(
+        function(snap){
+          state.billTemplates = snap.docs.map(function(d){
+            var data = d.data() || {};
+            return { id: d.id, name: data.name, category: data.category, estimatedAmount: data.estimatedAmount, dueDay: data.dueDay, type: data.type === "income" ? "income" : "expense" };
+          });
+          state.billsReady = true;
+          maybeGenerateRecurring();
+          renderBillsList();
+        },
+        function(){ loadBillTemplatesLocal(); renderBillsList(); }
+      );
+    } catch(e){ loadBillTemplatesLocal(); }
+  }
+
+  function loadBillTemplatesLocal(){
+    try{
+      var raw = localStorage.getItem(BILLS_LOCAL_KEY);
+      state.billTemplates = raw ? JSON.parse(raw) : [];
+    } catch(e){ state.billTemplates = []; }
+  }
+  function saveBillTemplatesLocal(){
+    try{ localStorage.setItem(BILLS_LOCAL_KEY, JSON.stringify(state.billTemplates)); } catch(e){}
+  }
+
+  function addBillTemplate(tpl){
+    if(state.backend === "db"){
+      return state.dbApi.collection("billTemplates").add(tpl).catch(function(){
+        showToast("Não foi possível salvar a conta fixa agora.");
+      });
+    } else {
+      tpl.id = "b" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+      state.billTemplates.push(tpl);
+      saveBillTemplatesLocal();
+      ensureRecurringForVisibleMonth();
+      renderBillsList();
+      return Promise.resolve();
+    }
+  }
+  function updateBillTemplate(id, patch){
+    if(state.backend === "db"){
+      return state.dbApi.doc("billTemplates/" + id).update(patch).catch(function(){
+        showToast("Não foi possível salvar a conta fixa agora.");
+      });
+    } else {
+      var t = state.billTemplates.find(function(t){ return t.id === id; });
+      if(t) Object.assign(t, patch);
+      saveBillTemplatesLocal();
+      renderBillsList();
+      return Promise.resolve();
+    }
+  }
+  function deleteBillTemplate(id){
+    if(state.backend === "db"){
+      return state.dbApi.doc("billTemplates/" + id).delete().catch(function(){
+        showToast("Não foi possível excluir agora.");
+      });
+    } else {
+      state.billTemplates = state.billTemplates.filter(function(t){ return t.id !== id; });
+      saveBillTemplatesLocal();
+      renderBillsList();
+      return Promise.resolve();
+    }
+  }
+
+  function clampDay(year, month, day){
+    var lastDay = new Date(year, month + 1, 0).getDate();
+    return Math.min(Math.max(1, day || 1), lastDay);
+  }
+
+  // só gera contas fixas depois que TANTO a lista de lançamentos quanto a de
+  // contas fixas terminaram de carregar pelo menos uma vez — chamar antes
+  // disso é o que causava duplicatas (a checagem "já existe?" rodava contra
+  // uma lista de lançamentos ainda vazia)
+  function maybeGenerateRecurring(){
+    if(!state.txReady || !state.billsReady) return;
+    ensureRecurringForVisibleMonth();
+  }
+
+  // cria, se ainda não existir, o lançamento estimado do mês em exibição
+  // para cada conta fixa cadastrada — nunca retroage para meses passados.
+  // usa um id fixo (conta+mês) e "set" em vez de "add": se disparar mais de
+  // uma vez (duas abas abertas, reconexão etc.) o segundo disparo só
+  // sobrescreve o mesmo documento em vez de criar duplicata.
+  // acha a forma de pagamento usada da ÚLTIMA vez que essa conta fixa foi
+  // lançada (olhando entre os lançamentos reais, não o template) — assim,
+  // uma vez que o usuário edita o lançamento de um mês pra marcar "Pix" ou
+  // "Boleto", os meses seguintes já nascem com essa mesma forma. Se ele
+  // trocar de novo mais pra frente, essa nova escolha (por ter data mais
+  // recente) passa a valer dali em diante.
+  function lastPaymentMethodForTemplate(templateId){
+    var best = null;
+    state.transactions.forEach(function(t){
+      if(t.templateId !== templateId) return;
+      if(!t.paymentMethod) return;
+      if(!best || t.date > best.date) best = t;
+    });
+    return best ? best.paymentMethod : "";
+  }
+
+  function ensureRecurringForVisibleMonth(){
+    if(!state.billTemplates || state.billTemplates.length === 0) return;
+    var today = new Date();
+    var todayKey = monthKey(today.getFullYear(), today.getMonth());
+    var viewKey = monthKey(state.year, state.month);
+    if(viewKey < todayKey) return;
+    state.billTemplates.forEach(function(tpl){
+      var fixedId = "rb_" + tpl.id + "_" + viewKey;
+      if(state.pendingBillGen[fixedId]) return;
+      var exists = state.transactions.some(function(t){ return t.id === fixedId || (t.templateId === tpl.id && t.date && t.date.indexOf(viewKey) === 0); });
+      if(exists) return;
+      state.pendingBillGen[fixedId] = true;
+      var day = clampDay(state.year, state.month, tpl.dueDay);
+      var txType = tpl.type === "income" ? "income" : "expense";
+      var payload = {
+        type: txType,
+        amount: tpl.estimatedAmount || 0,
+        category: tpl.category || "Contas",
+        paymentMethod: lastPaymentMethodForTemplate(tpl.id),
+        note: tpl.name,
+        date: viewKey + "-" + pad2(day),
+        templateId: tpl.id,
+        estimated: true,
+        createdAt: Date.now()
+      };
+      // conta fixa de salário: o valor estimado é o BRUTO — calcula e provisiona
+      // já com o desconto de INSS/IRRF, do mesmo jeito que um lançamento manual
+      if(txType === "income" && isSalaryCategoryName(tpl.category)){
+        var salCalc = calcSalaryDeductions(tpl.estimatedAmount || 0);
+        payload.amount = salCalc.net;
+        payload.grossAmount = salCalc.gross;
+        payload.inss = salCalc.inss;
+        payload.irrf = salCalc.irrf;
+        payload.note = "Bruto " + fmtBRL(salCalc.gross) + " · INSS −" + fmtBRL(salCalc.inss) + " · IRRF −" + fmtBRL(salCalc.irrf);
+      }
+      if(state.backend === "db"){
+        state.dbApi.doc("transactions/" + fixedId).set(payload).catch(function(){});
+      } else {
+        payload.id = fixedId;
+        state.transactions.unshift(payload);
+        saveLocal();
+        renderAll();
+      }
+    });
+  }
+
+  function subscribeDb(){
+    try{
+      state.dbApi.collection("transactions").orderBy("date","desc").limit(1000).onSnapshot(
+        function(snap){
+          state.transactions = snap.docs.map(function(d){
+            var data = d.data() || {};
+            return {
+              id: d.id, type: data.type, amount: data.amount,
+              category: data.category, paymentMethod: data.paymentMethod || "",
+              grossAmount: data.grossAmount != null ? data.grossAmount : null,
+              inss: data.inss != null ? data.inss : null,
+              irrf: data.irrf != null ? data.irrf : null,
+              templateId: data.templateId || null,
+              originalDate: data.originalDate || null,
+              estimated: !!data.estimated,
+              note: data.note || "",
+              date: data.date, createdAt: data.createdAt || 0
+            };
+          });
+          state.txReady = true;
+          maybeGenerateRecurring();
+          renderAll();
+        },
+        function(){ startLocal(); }
+      );
+    } catch(e){ startLocal(); }
+  }
+
+  function startLocal(){
+    state.backend = "local";
+    loadLocal();
+    loadBillTemplatesLocal();
+    state.txReady = true;
+    state.billsReady = true;
+    maybeGenerateRecurring();
+    renderAll();
+  }
+
+  function loadLocal(){
+    try{
+      var raw = localStorage.getItem(LOCAL_KEY);
+      state.transactions = raw ? JSON.parse(raw) : [];
+    } catch(e){ state.transactions = []; }
+  }
+  function saveLocal(){
+    try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(state.transactions)); } catch(e){}
+  }
+
+  function addTx(tx){
+    if(state.backend === "db"){
+      return state.dbApi.collection("transactions").add(tx).catch(function(){
+        showToast("Não foi possível salvar agora.");
+      });
+    } else {
+      tx.id = "l" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+      state.transactions.unshift(tx);
+      saveLocal();
+      renderAll();
+      return Promise.resolve();
+    }
+  }
+  function updateTx(id, patch){
+    if(state.backend === "db"){
+      return state.dbApi.doc("transactions/" + id).update(patch).catch(function(){
+        showToast("Não foi possível salvar agora.");
+      });
+    } else {
+      var t = state.transactions.find(function(t){ return t.id === id; });
+      if(t) Object.assign(t, patch);
+      saveLocal();
+      renderAll();
+      return Promise.resolve();
+    }
+  }
+  function deleteTx(id){
+    if(state.backend === "db"){
+      return state.dbApi.doc("transactions/" + id).delete().catch(function(){
+        showToast("Não foi possível excluir agora.");
+      });
+    } else {
+      state.transactions = state.transactions.filter(function(t){ return t.id !== id; });
+      saveLocal();
+      renderAll();
+      return Promise.resolve();
+    }
+  }
+
+  // ---------- helpers ----------
+  function pad2(n){ return n < 10 ? "0"+n : ""+n; }
+  function monthKey(y,m){ return y + "-" + pad2(m+1); }
+  function fmtBRL(n){
+    return new Intl.NumberFormat("pt-BR", {style:"currency", currency:"BRL"}).format(n || 0);
+  }
+  function parseAmount(str){
+    if(!str) return 0;
+    var cleaned = str.replace(/[^\d,.-]/g,"");
+    if(cleaned.indexOf(",") > -1 && cleaned.indexOf(".") > -1){
+      cleaned = cleaned.replace(/\./g,"").replace(",",".");
+    } else if(cleaned.indexOf(",") > -1){
+      cleaned = cleaned.replace(",",".");
+    }
+    var v = parseFloat(cleaned);
+    return isNaN(v) ? 0 : v;
+  }
+  function isoToday(){
+    var d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
+  }
+  function round2(n){ return Math.round((n + 1e-8) * 100) / 100; }
+
+  // Tabelas de referência (2025) para estimar descontos de salário CLT.
+  // Não considera dependentes, pensão, plano de saúde ou outras deduções —
+  // são valores oficiais de INSS/IRRF que mudam todo ano, então isto é
+  // sempre uma ESTIMATIVA a conferir no contracheque.
+  var INSS_BRACKETS = [
+    {upTo: 1518.00, rate: 0.075},
+    {upTo: 2793.88, rate: 0.09},
+    {upTo: 4190.83, rate: 0.12},
+    {upTo: 8157.41, rate: 0.14}
+  ];
+  var IRRF_BRACKETS = [
+    {upTo: 2259.20, rate: 0,     deduct: 0},
+    {upTo: 2826.65, rate: 0.075, deduct: 169.44},
+    {upTo: 3751.05, rate: 0.15,  deduct: 381.44},
+    {upTo: 4664.68, rate: 0.225, deduct: 662.77},
+    {upTo: Infinity, rate: 0.275, deduct: 896.00}
+  ];
+
+  function calcINSS(gross){
+    var base = Math.max(0, gross || 0);
+    var ceiling = INSS_BRACKETS[INSS_BRACKETS.length - 1].upTo;
+    var capped = Math.min(base, ceiling);
+    var total = 0, prevLimit = 0;
+    for(var i = 0; i < INSS_BRACKETS.length; i++){
+      var limit = INSS_BRACKETS[i].upTo;
+      var portion = Math.max(0, Math.min(capped, limit) - prevLimit);
+      total += portion * INSS_BRACKETS[i].rate;
+      prevLimit = limit;
+      if(capped <= limit) break;
+    }
+    return round2(total);
+  }
+
+  function calcIRRF(base){
+    var b = Math.max(0, base || 0);
+    for(var i = 0; i < IRRF_BRACKETS.length; i++){
+      if(b <= IRRF_BRACKETS[i].upTo){
+        var v = b * IRRF_BRACKETS[i].rate - IRRF_BRACKETS[i].deduct;
+        return round2(Math.max(0, v));
+      }
+    }
+    return 0;
+  }
+
+  function calcSalaryDeductions(gross){
+    var g = round2(Math.max(0, gross || 0));
+    var inss = calcINSS(g);
+    var irrf = calcIRRF(g - inss);
+    return { gross: g, inss: inss, irrf: irrf, net: round2(g - inss - irrf) };
+  }
+
+  function isSalaryCategoryName(name){
+    return normalizeText(name).indexOf("salario") > -1;
+  }
+  function isSalaryCategory(){
+    return isSalaryCategoryName(els.fCategory.value);
+  }
+
+  function updateSalaryBreakdown(){
+    var wrap = $("salaryBreakdownWrap");
+    var box = $("salaryBreakdown");
+    if(state.formType !== "income" || !isSalaryCategory()){
+      wrap.style.display = "none";
+      return;
+    }
+    var gross = parseAmount(els.fAmount.value);
+    if(!gross || gross <= 0){
+      wrap.style.display = "none";
+      return;
+    }
+    var calc = calcSalaryDeductions(gross);
+    wrap.style.display = "block";
+    box.innerHTML =
+      '<div class="row"><span>Bruto</span><span class="v">' + fmtBRL(calc.gross) + '</span></div>'
+      + '<div class="row"><span>INSS</span><span class="v">−' + fmtBRL(calc.inss) + '</span></div>'
+      + '<div class="row"><span>IRRF</span><span class="v">−' + fmtBRL(calc.irrf) + '</span></div>'
+      + '<div class="row total"><span>Líquido a lançar</span><span class="v">' + fmtBRL(calc.net) + '</span></div>'
+      + '<div class="hint">Estimativa pela tabela vigente, sem dependentes ou outros descontos. É o valor líquido que entra no seu saldo — confira no contracheque.</div>';
+  }
+
+  // cada nome (categoria, conta fixa) recebe uma cor própria da paleta, na
+  // ordem em que aparece — evita que duas categorias diferentes caiam na
+  // mesma cor por coincidência de hash, como acontecia antes
+  var avatarColorMap = {};
+  var avatarColorIndex = 0;
+  (function seedAvatarColors(){
+    DEFAULT_CATS.expense.concat(DEFAULT_CATS.income).forEach(function(name){
+      if(!avatarColorMap[name]){
+        avatarColorMap[name] = AVATAR_COLORS[avatarColorIndex % AVATAR_COLORS.length];
+        avatarColorIndex++;
+      }
+    });
+  })();
+  function hashColor(str){
+    var key = str || "?";
+    if(!avatarColorMap[key]){
+      avatarColorMap[key] = AVATAR_COLORS[avatarColorIndex % AVATAR_COLORS.length];
+      avatarColorIndex++;
+    }
+    return avatarColorMap[key];
+  }
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add("show");
+    clearTimeout(showToast._t);
+    var duration = msg.length > 40 ? 4200 : 2200;
+    showToast._t = setTimeout(function(){ els.toast.classList.remove("show"); }, duration);
+  }
+
+  function shiftMonth(delta){
+    var d = new Date(state.year, state.month + delta, 1);
+    state.year = d.getFullYear();
+    state.month = d.getMonth();
+    state.expandedCategory = null;
+    state.selectedTx = {};
+    renderMonthLabel();
+    maybeGenerateRecurring();
+    renderAll();
+  }
+  function renderMonthLabel(){
+    var d = new Date(state.year, state.month, 1);
+    var label = d.toLocaleDateString("pt-BR", {month:"long", year:"numeric"});
+    els.monthLabel.textContent = label;
+  }
+
+  // ---------- rendering ----------
+  function renderAll(){
+    var key = monthKey(state.year, state.month);
+    var monthTx = state.transactions.filter(function(t){ return t.date && t.date.indexOf(key) === 0; });
+
+    var income = 0, expense = 0;
+    monthTx.forEach(function(t){
+      if(t.type === "income") income += (t.amount || 0);
+      else expense += (t.amount || 0);
+    });
+    var balance = income - expense;
+
+    els.incomeTotal.textContent = fmtBRL(income);
+    els.expenseTotal.textContent = fmtBRL(expense);
+    els.balanceFigure.textContent = fmtBRL(balance);
+    els.balanceFigure.style.color = balance < 0 ? "var(--expense)" : "var(--ink)";
+
+    // se a forma de pagamento em foco não existir mais neste mês, volta pra "Todos"
+    var methodsPresent = {};
+    monthTx.forEach(function(t){ if(t.type === "expense") methodsPresent[t.paymentMethod || ""] = true; });
+    if(state.paymentFilter && !methodsPresent[state.paymentFilter]) state.paymentFilter = null;
+
+    var filteredTx = state.paymentFilter
+      ? monthTx.filter(function(t){ return (t.paymentMethod || "") === state.paymentFilter; })
+      : monthTx;
+
+    renderContent(els.content, monthTx, filteredTx);
+    updateCategoryDatalist();
+    updatePaymentDatalist();
+    updateFooterNote();
+  }
+
+  function renderPaymentChips(monthTx){
+    var byMethod = {};
+    monthTx.forEach(function(t){
+      if(t.type !== "expense") return;
+      var m = t.paymentMethod || "";
+      if(!m) return;
+      byMethod[m] = (byMethod[m] || 0) + (t.amount || 0);
+    });
+    var methods = Object.keys(byMethod).map(function(m){ return {name:m, amount:byMethod[m]}; });
+    if(methods.length === 0) return "";
+    methods.sort(function(a,b){ return b.amount - a.amount; });
+
+    var html = '<section><div class="section-title">Forma de pagamento</div><div class="chip-row">';
+    html += '<button type="button" class="chip' + (state.paymentFilter ? "" : " active") + '" data-method="">Todos</button>';
+    methods.forEach(function(m){
+      var active = state.paymentFilter === m.name;
+      html += '<button type="button" class="chip' + (active ? " active" : "") + '" data-method="' + escapeAttr(m.name) + '">'
+        + escapeHtml(m.name) + '<span class="chip-amt mono">' + fmtBRL(m.amount) + '</span></button>';
+    });
+    html += '</div></section>';
+    return html;
+  }
+
+  function renderContent(container, monthTx, filteredTx){
+    var html = '<section><div class="chip-row">'
+      + '<button type="button" class="chip bills-chip">Contas fixas</button>'
+      + '<button type="button" class="chip dashboard-chip">Dashboard</button>'
+      + '<button type="button" class="chip reports-chip">Relatórios</button>'
+      + '</div></section>';
+    html += renderPaymentChips(monthTx);
+    html += categoryListHtml(filteredTx);
+    html += transactionListHtml(filteredTx);
+    container.innerHTML = html;
+
+    var billsChip = container.querySelector(".bills-chip");
+    if(billsChip) billsChip.addEventListener("click", openBillsSheet);
+    var dashChip = container.querySelector(".dashboard-chip");
+    if(dashChip) dashChip.addEventListener("click", openDashboardSheet);
+    var reportsChip = container.querySelector(".reports-chip");
+    if(reportsChip) reportsChip.addEventListener("click", openReportsSheet);
+
+    container.querySelectorAll(".chip").forEach(function(chip){
+      if(chip.classList.contains("bills-chip") || chip.classList.contains("dashboard-chip") || chip.classList.contains("reports-chip")) return;
+      chip.addEventListener("click", function(){
+        var m = chip.getAttribute("data-method");
+        var newFilter = m || null;
+        if(newFilter !== state.paymentFilter) state.selectedTx = {};
+        state.paymentFilter = newFilter;
+        renderAll();
+      });
+    });
+    container.querySelectorAll(".tx-row").forEach(function(row){
+      row.addEventListener("click", function(e){
+        if(e.target && e.target.classList && e.target.classList.contains("tx-select")) return;
+        var id = row.getAttribute("data-id");
+        var tx = state.transactions.find(function(t){ return t.id === id; });
+        if(tx) openSheet(tx);
+      });
+    });
+    container.querySelectorAll(".tx-select").forEach(function(chk){
+      chk.addEventListener("click", function(e){ e.stopPropagation(); });
+      chk.addEventListener("change", function(){
+        var id = chk.getAttribute("data-id");
+        if(chk.checked) state.selectedTx[id] = true; else delete state.selectedTx[id];
+        renderAll();
+      });
+    });
+    var clearSelBtn = container.querySelector("#clearSelectionBtn");
+    if(clearSelBtn){
+      clearSelBtn.addEventListener("click", function(e){
+        e.stopPropagation();
+        state.selectedTx = {};
+        renderAll();
+      });
+    }
+    container.querySelectorAll(".cat-row").forEach(function(row){
+      row.addEventListener("click", function(){
+        var cat = row.getAttribute("data-cat");
+        state.expandedCategory = (state.expandedCategory === cat) ? null : cat;
+        renderAll();
+      });
+    });
+    container.querySelectorAll(".cat-detail-row").forEach(function(row){
+      row.addEventListener("click", function(e){
+        e.stopPropagation();
+        var id = row.getAttribute("data-id");
+        var tx = state.transactions.find(function(t){ return t.id === id; });
+        if(tx) openSheet(tx);
+      });
+    });
+  }
+
+  function categoryListHtml(monthTx){
+    var byCat = {};
+    monthTx.forEach(function(t){
+      if(t.type !== "expense") return;
+      var cat = t.category || "Outros";
+      byCat[cat] = (byCat[cat] || 0) + (t.amount || 0);
+    });
+    var cats = Object.keys(byCat).map(function(name){ return {name:name, amount:byCat[name]}; });
+    cats.sort(function(a,b){ return b.amount - a.amount; });
+    var maxAmt = cats.length ? cats[0].amount : 0;
+
+    var html = "";
+    html += '<section><div class="section-title">Por categoria' + (state.paymentFilter ? ' &middot; ' + escapeHtml(state.paymentFilter) : '') + '</div>';
+    if(cats.length === 0){
+      html += '<div class="empty-cats">Sem despesas registradas' + (state.paymentFilter ? ' nessa forma de pagamento' : ' neste mês') + '.</div>';
+    } else {
+      cats.slice(0,6).forEach(function(c){
+        var pct = maxAmt > 0 ? Math.max(4, Math.round((c.amount/maxAmt)*100)) : 0;
+        var initial = c.name.trim().charAt(0).toUpperCase() || "?";
+        var isExpanded = state.expandedCategory === c.name;
+        html += '<div class="cat-row' + (isExpanded ? " expanded" : "") + '" data-cat="' + escapeAttr(c.name) + '">'
+          + '<div class="avatar" style="background:var(' + hashColor(c.name) + ')">' + escapeHtml(initial) + '</div>'
+          + '<div class="cat-info">'
+          + '<div class="cat-top"><span class="cat-name">' + escapeHtml(c.name) + '</span><span class="cat-amount mono">' + fmtBRL(c.amount) + '</span></div>'
+          + '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>'
+          + '</div>'
+          + '<svg class="cat-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>'
+          + '</div>';
+        if(isExpanded){
+          html += categoryDetailHtml(monthTx, c.name);
+        }
+      });
+    }
+    html += '</section>';
+    return html;
+  }
+
+  function categoryDetailHtml(monthTx, catName){
+    var items = monthTx.filter(function(t){ return t.type === "expense" && (t.category || "Outros") === catName; });
+    if(items.length === 0){
+      return '<div class="cat-detail"><div class="cat-detail-empty">Sem lançamentos.</div></div>';
+    }
+    items.sort(function(a,b){
+      if(a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+    var html = '<div class="cat-detail">';
+    items.forEach(function(t){
+      // mostra a data real da compra aqui (não a data de arquivamento/mês de
+      // pagamento) — essa lista já é por item, então não tem o problema de
+      // cabeçalho misto que a lista principal tem
+      var dObj = new Date((t.originalDate || t.date) + "T00:00:00");
+      var dLabel = dObj.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      var extraParts = [t.paymentMethod, t.note].filter(Boolean);
+      var extra = extraParts.length ? extraParts.map(escapeHtml).join(" · ") : "—";
+      html += '<div class="cat-detail-row" data-id="' + escapeAttr(t.id) + '">'
+        + '<span class="cat-detail-date mono">' + dLabel + '</span>'
+        + '<span class="cat-detail-note">' + extra + (t.estimated ? '<span class="est-tag">estimado</span>' : '') + '</span>'
+        + '<span class="cat-detail-amount mono">' + fmtBRL(t.amount) + '</span>'
+        + '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function transactionListHtml(monthTx){
+    // com uma forma de pagamento filtrada (ex.: Cartão de Crédito), mostra
+    // uma caixinha de seleção em cada lançamento para o usuário somar um
+    // subconjunto deles (ex.: conferir se bate com um valor da fatura)
+    var selectable = !!state.paymentFilter;
+    var html = '<section><div class="section-title">Lançamentos</div>';
+    if(selectable){
+      var selSum = 0, selCount = 0;
+      monthTx.forEach(function(t){ if(state.selectedTx[t.id]){ selSum += (t.amount||0); selCount++; } });
+      html += '<div class="selection-bar' + (selCount > 0 ? " active" : "") + '">'
+        + '<span>' + selCount + ' selecionado' + (selCount === 1 ? "" : "s") + '</span>'
+        + '<span class="selection-right"><span class="selection-sum mono">' + fmtBRL(selSum) + '</span>'
+        + (selCount > 0 ? '<button type="button" class="selection-clear" id="clearSelectionBtn">Limpar</button>' : '')
+        + '</span></div>';
+    }
+    if(monthTx.length === 0){
+      html += '<div class="empty-state">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7" cy="14.5" r="1"/></svg>'
+        + '<p>Nenhum lançamento neste mês.<br>Toque no + para adicionar o primeiro.</p>'
+        + '</div>';
+    } else {
+      // um lançamento é "importado de mês anterior" quando sua data real de
+      // compra (originalDate) cai num mês civil diferente do mês em que ele
+      // foi arquivado (mês de pagamento) — é exatamente o caso da fatura de
+      // cartão forçada pro mês em que foi paga. Esses itens vão num bloco
+      // separado, DEPOIS dos lançamentos que já são mesmo deste mês (que
+      // ficam em cima, por serem os mais atuais), pra não misturar dias de
+      // meses diferentes numa mesma lista cronológica.
+      function isImportedFromOtherMonth(t){
+        return !!(t.originalDate && t.originalDate.slice(0,7) !== t.date.slice(0,7));
+      }
+      var sorted = monthTx.slice().sort(function(a,b){
+        var aImp = isImportedFromOtherMonth(a), bImp = isImportedFromOtherMonth(b);
+        if(aImp !== bImp) return aImp ? 1 : -1;
+        var ad = a.originalDate || a.date, bd = b.originalDate || b.date;
+        if(ad !== bd) return ad < bd ? 1 : -1;
+        return (b.createdAt||0) - (a.createdAt||0);
+      });
+      var groups = [];
+      var lastKey = null, currentGroup = null;
+      sorted.forEach(function(t){
+        var displayDate = t.originalDate || t.date;
+        var imported = isImportedFromOtherMonth(t);
+        var key = displayDate + "|" + imported;
+        if(key !== lastKey){
+          currentGroup = {date:displayDate, imported:imported, items:[]};
+          groups.push(currentGroup);
+          lastKey = key;
+        }
+        currentGroup.items.push(t);
+      });
+      var sectionShown = null;
+      groups.forEach(function(g){
+        var sectionKey = g.imported ? "imported" : "normal";
+        if(sectionKey !== sectionShown){
+          html += '<div class="list-section-label">' + (g.imported ? "Faturas de meses anteriores, pagas neste mês" : "Lançamentos deste mês") + '</div>';
+          sectionShown = sectionKey;
+        }
+        var dObj = new Date(g.date + "T00:00:00");
+        var heading = dObj.toLocaleDateString("pt-BR", {weekday:"short", day:"2-digit", month:"short"});
+        html += '<div class="day-group"><div class="day-heading">' + escapeHtml(heading) + '</div><div class="tx-card">';
+        g.items.forEach(function(t){
+          var initial = (t.category||"?").trim().charAt(0).toUpperCase() || "?";
+          html += '<div class="tx-row" data-id="' + escapeAttr(t.id) + '">'
+            + (selectable ? '<input type="checkbox" class="tx-select" data-id="' + escapeAttr(t.id) + '" ' + (state.selectedTx[t.id] ? "checked" : "") + '>' : '')
+            + '<div class="avatar" style="background:var(' + hashColor(t.category||"Outros") + ')">' + escapeHtml(initial) + '</div>'
+            + '<div class="tx-main"><div class="tx-cat">' + escapeHtml(t.category||"Outros") + (t.estimated ? '<span class="est-tag">estimado</span>' : '') + '</div>'
+            + (t.note || t.paymentMethod || t.grossAmount ? '<div class="tx-note">' + [t.paymentMethod, t.grossAmount ? ("bruto " + fmtBRL(t.grossAmount)) : "", t.note].filter(Boolean).map(escapeHtml).join(" · ") + '</div>' : '')
+            + '</div>'
+            + '<div class="tx-amount ' + (t.type==="income"?"in":"out") + ' mono">' + (t.type==="income"?"+":"−") + " " + fmtBRL(t.amount) + '</div>'
+            + '</div>';
+        });
+        html += '</div></div>';
+      });
+    }
+    html += '</section>';
+    return html;
+  }
+
+  function updateCategoryDatalist(){
+    var used = {};
+    state.transactions.forEach(function(t){ if(t.category) used[t.category] = true; });
+    var defaults = DEFAULT_CATS[state.formType] || [];
+    var all = defaults.concat(Object.keys(used).filter(function(c){ return defaults.indexOf(c) === -1; }));
+    els.catList.innerHTML = all.map(function(c){ return '<option value="' + escapeAttr(c) + '"></option>'; }).join("");
+  }
+
+  function updatePaymentDatalist(){
+    var used = {};
+    state.transactions.forEach(function(t){ if(t.paymentMethod) used[t.paymentMethod] = true; });
+    var all = PAYMENT_METHODS.concat(Object.keys(used).filter(function(m){ return PAYMENT_METHODS.indexOf(m) === -1; }));
+    els.paymentList.innerHTML = all.map(function(m){ return '<option value="' + escapeAttr(m) + '"></option>'; }).join("");
+  }
+
+  function updateFooterNote(){
+    var note = state.backend === "db"
+      ? "Seus dados ficam salvos com a sua conta."
+      : "Seus dados ficam salvos neste dispositivo.";
+    els.footerNote.innerHTML = escapeHtml(note)
+      + ' &middot; <button id="exportBtn" type="button">Exportar CSV</button>'
+      + ' &middot; <button id="billsBtn" type="button">Contas fixas</button>'
+      + ' &middot; <button id="importBtn" type="button">Importar fatura</button>'
+      + ' &middot; <button id="logoutBtn" type="button">Sair</button>';
+    var lbtn = $("logoutBtn");
+    if(lbtn) lbtn.addEventListener("click", function(){ if(sb) sb.auth.signOut(); });
+    var btn = $("exportBtn");
+    if(btn) btn.addEventListener("click", exportCsv);
+    var bbtn = $("billsBtn");
+    if(bbtn) bbtn.addEventListener("click", openBillsSheet);
+    var ibtn = $("importBtn");
+    if(ibtn) ibtn.addEventListener("click", openImportSheet);
+  }
+
+  // ---------- contas fixas (sheet) ----------
+  function renderBillsList(){
+    var el = $("billsList");
+    if(!el) return;
+    if(!state.billTemplates || state.billTemplates.length === 0){
+      el.innerHTML = '<div class="empty-cats">Nenhuma conta fixa cadastrada ainda.</div>';
+      return;
+    }
+    var html = "";
+    state.billTemplates.forEach(function(tpl){
+      var initial = (tpl.name || "?").trim().charAt(0).toUpperCase() || "?";
+      var isIncome = tpl.type === "income";
+      html += '<div class="bill-row" data-id="' + escapeAttr(tpl.id) + '">'
+        + '<div class="avatar" style="background:var(' + hashColor(tpl.name || "") + ')">' + escapeHtml(initial) + '</div>'
+        + '<div class="cat-info"><div class="cat-top"><span class="cat-name">' + escapeHtml(tpl.name) + (isIncome ? '<span class="est-tag" style="color:var(--income);">recebo</span>' : '') + '</span><span class="cat-amount mono">' + fmtBRL(tpl.estimatedAmount) + '</span></div>'
+        + '<div>' + escapeHtml(tpl.category || "Contas") + ' · todo dia ' + (tpl.dueDay || 1) + '</div></div>'
+        + '</div>';
+    });
+    el.innerHTML = html;
+    el.querySelectorAll(".bill-row").forEach(function(row){
+      row.addEventListener("click", function(){
+        var id = row.getAttribute("data-id");
+        var tpl = state.billTemplates.find(function(t){ return t.id === id; });
+        if(tpl) openBillForm(tpl);
+      });
+    });
+  }
+
+  function setBillFormType(type){
+    state.billFormType = type;
+    document.querySelectorAll(".bill-type-btn").forEach(function(btn){
+      btn.classList.toggle("active", btn.getAttribute("data-type") === type);
+    });
+  }
+
+  function resetBillForm(){
+    state.editingBillId = null;
+    $("bName").value = "";
+    $("bCategory").value = "Contas";
+    $("bAmount").value = "";
+    $("bDueDay").value = "";
+    setBillFormType("expense");
+    $("billsDeleteBtn").style.display = "none";
+    $("billsSaveBtn").textContent = "Adicionar conta";
+  }
+
+  function openBillForm(tpl){
+    state.editingBillId = tpl.id;
+    $("bName").value = tpl.name || "";
+    $("bCategory").value = tpl.category || "Contas";
+    $("bAmount").value = tpl.estimatedAmount != null ? String(tpl.estimatedAmount).replace(".", ",") : "";
+    $("bDueDay").value = tpl.dueDay || "";
+    setBillFormType(tpl.type === "income" ? "income" : "expense");
+    $("billsDeleteBtn").style.display = "block";
+    $("billsSaveBtn").textContent = "Salvar alterações";
+  }
+
+  function openBillsSheet(){
+    resetBillForm();
+    renderBillsList();
+    els.billsOverlay.classList.add("open");
+    applyViewportFix(els.billsOverlay);
+    document.body.style.overflow = "hidden";
+  }
+  function closeBillsSheet(){
+    els.billsOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+    state.editingBillId = null;
+  }
+
+  function saveBillForm(){
+    var name = $("bName").value.trim();
+    var category = $("bCategory").value.trim() || "Contas";
+    var amount = parseAmount($("bAmount").value);
+    var dueDay = Math.min(Math.max(parseInt($("bDueDay").value, 10) || 1, 1), 31);
+    if(!name){ showToast("Informe o nome da conta."); return; }
+    var payload = { name: name, category: category, estimatedAmount: amount, dueDay: dueDay, type: state.billFormType };
+    if(state.editingBillId){
+      updateBillTemplate(state.editingBillId, payload);
+    } else {
+      addBillTemplate(payload);
+    }
+    closeBillsSheet();
+    maybeGenerateRecurring();
+    showToast("Conta fixa salva.");
+  }
+
+  function deleteBillForm(){
+    if(!state.editingBillId) return;
+    deleteBillTemplate(state.editingBillId);
+    closeBillsSheet();
+    showToast("Conta fixa removida.");
+  }
+
+  // ---------- dashboard & relatórios ----------
+  function txForMonth(y, m){
+    var key = monthKey(y, m);
+    return state.transactions.filter(function(t){ return t.date && t.date.indexOf(key) === 0; });
+  }
+
+  function openDashboardSheet(){
+    renderDashboard();
+    els.dashboardOverlay.classList.add("open");
+    applyViewportFix(els.dashboardOverlay);
+    document.body.style.overflow = "hidden";
+  }
+  function closeDashboardSheet(){
+    els.dashboardOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  function openReportsSheet(){
+    renderReports();
+    els.reportsOverlay.classList.add("open");
+    applyViewportFix(els.reportsOverlay);
+    document.body.style.overflow = "hidden";
+  }
+  function closeReportsSheet(){
+    els.reportsOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  function renderDashboard(){
+    var el = $("dashboardContent");
+    if(!el) return;
+    var monthTx = txForMonth(state.year, state.month);
+    el.innerHTML = dashCategoryChartHtml(monthTx) + dashEvolutionChartHtml() + dashPaymentChartHtml(monthTx);
+  }
+
+  // gráfico 1: despesas por categoria no mês — parte-do-todo, então usa uma
+  // única barra empilhada (não pizza) com legenda sempre rotulada por nome,
+  // nunca só pela cor
+  function dashCategoryChartHtml(monthTx){
+    var byCat = {};
+    monthTx.forEach(function(t){
+      if(t.type !== "expense") return;
+      var cat = t.category || "Outros";
+      byCat[cat] = (byCat[cat] || 0) + (t.amount || 0);
+    });
+    var cats = Object.keys(byCat).map(function(name){ return {name:name, amount:byCat[name]}; });
+    cats.sort(function(a,b){ return b.amount - a.amount; });
+    var total = cats.reduce(function(s,c){ return s + c.amount; }, 0);
+
+    var html = '<div class="dash-section"><div class="section-title-flat">Despesas por categoria</div>';
+    if(total <= 0){
+      html += '<div class="report-empty">Sem despesas registradas neste mês.</div></div>';
+      return html;
+    }
+    // teto de 7 fatias — o que passar disso entra em "Outros"
+    var shown = cats.slice(0,7);
+    if(cats.length > 7){
+      var restSum = cats.slice(7).reduce(function(s,c){ return s + c.amount; }, 0);
+      var outrosIdx = -1;
+      shown.forEach(function(c,i){ if(c.name === "Outros") outrosIdx = i; });
+      if(outrosIdx > -1){ shown[outrosIdx].amount += restSum; }
+      else { shown.push({name:"Outros", amount:restSum}); }
+      shown.sort(function(a,b){ return b.amount - a.amount; });
+    }
+    html += '<div class="stack-bar">';
+    shown.forEach(function(c){
+      var pct = total > 0 ? (c.amount/total*100) : 0;
+      html += '<div class="stack-seg" style="width:' + pct.toFixed(2) + '%;background:var(' + hashColor(c.name) + ')" title="' + escapeAttr(c.name + ": " + fmtBRL(c.amount)) + '"></div>';
+    });
+    html += '</div>';
+    html += '<div class="legend-list" style="margin-top:12px;">';
+    shown.forEach(function(c){
+      var pct = total > 0 ? Math.round(c.amount/total*100) : 0;
+      html += '<div class="legend-row"><span class="legend-dot" style="background:var(' + hashColor(c.name) + ')"></span>'
+        + '<span class="legend-name">' + escapeHtml(c.name) + '</span>'
+        + '<span class="legend-pct">' + pct + '%</span>'
+        + '<span class="legend-amt mono">' + fmtBRL(c.amount) + '</span></div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  // gráfico 2: receita x despesa nos últimos 6 meses — duas séries, então
+  // barras agrupadas (nunca eixo duplo) nas cores já usadas no resto do app
+  function dashEvolutionChartHtml(){
+    var months = [];
+    for(var i = 5; i >= 0; i--){
+      var d = new Date(state.year, state.month - i, 1);
+      months.push({y:d.getFullYear(), m:d.getMonth()});
+    }
+    var data = months.map(function(mm){
+      var tx = txForMonth(mm.y, mm.m);
+      var income = 0, expense = 0;
+      tx.forEach(function(t){
+        if(t.type === "income") income += (t.amount||0);
+        else expense += (t.amount||0);
+      });
+      var d = new Date(mm.y, mm.m, 1);
+      var label = d.toLocaleDateString("pt-BR", {month:"short"}).replace(".", "");
+      return { label: label, income: income, expense: expense };
+    });
+    var maxVal = Math.max.apply(null, data.map(function(d){ return Math.max(d.income, d.expense); }).concat([1]));
+
+    var W = 300, H = 140, padBottom = 20, padTop = 10;
+    var groupW = W / data.length;
+    var barW = Math.min(14, groupW/2 - 4);
+    var html = '<div class="dash-section"><div class="section-title-flat">Receita x despesa (6 meses)</div>';
+    html += '<div class="chart-legend"><span class="legend-chip"><span class="legend-dot" style="background:var(--income)"></span>Receita</span>'
+      + '<span class="legend-chip"><span class="legend-dot" style="background:var(--expense)"></span>Despesa</span></div>';
+    html += '<svg class="evo-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">';
+    data.forEach(function(d, i){
+      var cx = i * groupW + groupW/2;
+      var hIncome = maxVal > 0 ? (d.income/maxVal) * (H - padBottom - padTop) : 0;
+      var hExpense = maxVal > 0 ? (d.expense/maxVal) * (H - padBottom - padTop) : 0;
+      var baseY = H - padBottom;
+      var xIn = cx - barW - 2;
+      var xOut = cx + 2;
+      html += '<rect x="' + xIn.toFixed(1) + '" y="' + (baseY - hIncome).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(hIncome,1).toFixed(1) + '" rx="3" fill="var(--income)"><title>' + escapeAttr(d.label + ": " + fmtBRL(d.income)) + '</title></rect>';
+      html += '<rect x="' + xOut.toFixed(1) + '" y="' + (baseY - hExpense).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(hExpense,1).toFixed(1) + '" rx="3" fill="var(--expense)"><title>' + escapeAttr(d.label + ": " + fmtBRL(d.expense)) + '</title></rect>';
+      html += '<text x="' + cx.toFixed(1) + '" y="' + (H - 4) + '" text-anchor="middle" class="evo-month-label">' + escapeHtml(d.label) + '</text>';
+    });
+    html += '</svg></div>';
+    return html;
+  }
+
+  // auxiliares de geometria para o gráfico de rosca (pizza) abaixo
+  function polarToXY(cx, cy, r, angleDeg){
+    var rad = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+  function donutSegmentPath(cx, cy, rOuter, rInner, startAngle, endAngle){
+    // fatia única (100%) é um caso degenerado pro arco SVG — encurta um
+    // triz pra sempre fechar como anel quase completo
+    if(endAngle - startAngle >= 359.999){ endAngle = startAngle + 359.999; }
+    var p1 = polarToXY(cx, cy, rOuter, startAngle);
+    var p2 = polarToXY(cx, cy, rOuter, endAngle);
+    var p3 = polarToXY(cx, cy, rInner, endAngle);
+    var p4 = polarToXY(cx, cy, rInner, startAngle);
+    var largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+    return "M " + p1.x.toFixed(2) + " " + p1.y.toFixed(2)
+      + " A " + rOuter + " " + rOuter + " 0 " + largeArc + " 1 " + p2.x.toFixed(2) + " " + p2.y.toFixed(2)
+      + " L " + p3.x.toFixed(2) + " " + p3.y.toFixed(2)
+      + " A " + rInner + " " + rInner + " 0 " + largeArc + " 0 " + p4.x.toFixed(2) + " " + p4.y.toFixed(2)
+      + " Z";
+  }
+
+  // gráfico 3: gastos por forma de pagamento — parte-do-todo entre formas
+  // distintas, então rosca (pizza) categórica com legenda sempre rotulada
+  // por nome e valor, nunca só pela cor
+  function dashPaymentChartHtml(monthTx){
+    var byMethod = {};
+    monthTx.forEach(function(t){
+      if(t.type !== "expense") return;
+      var m = t.paymentMethod || "Não informado";
+      byMethod[m] = (byMethod[m] || 0) + (t.amount || 0);
+    });
+    var methods = Object.keys(byMethod).map(function(m){ return {name:m, amount:byMethod[m]}; });
+    methods.sort(function(a,b){ return b.amount - a.amount; });
+    var total = methods.reduce(function(s,m){ return s + m.amount; }, 0);
+
+    var html = '<div class="dash-section"><div class="section-title-flat">Gastos por forma de pagamento</div>';
+    if(total <= 0){
+      html += '<div class="report-empty">Sem despesas registradas neste mês.</div></div>';
+      return html;
+    }
+    // teto de 7 fatias — o que passar disso entra em "Outros"
+    var shown = methods.slice(0,7);
+    if(methods.length > 7){
+      var restSum = methods.slice(7).reduce(function(s,m){ return s + m.amount; }, 0);
+      shown.push({name:"Outros", amount:restSum});
+    }
+
+    var cx = 90, cy = 90, rOuter = 80, rInner = 48;
+    var angle = 0;
+    var paths = "";
+    shown.forEach(function(m){
+      var span = (m.amount/total) * 360;
+      paths += '<path d="' + donutSegmentPath(cx, cy, rOuter, rInner, angle, angle + span) + '" fill="var(' + hashColor(m.name) + ')" stroke="var(--surface)" stroke-width="2"><title>' + escapeAttr(m.name + ": " + fmtBRL(m.amount)) + '</title></path>';
+      angle += span;
+    });
+
+    html += '<div class="donut-wrap"><svg class="donut-svg" viewBox="0 0 180 180">' + paths
+      + '<text x="90" y="86" text-anchor="middle" class="donut-center-label">Total</text>'
+      + '<text x="90" y="105" text-anchor="middle" class="donut-center-amt">' + escapeHtml(fmtBRL(total)) + '</text>'
+      + '</svg></div>';
+
+    html += '<div class="legend-list" style="margin-top:14px;">';
+    shown.forEach(function(m){
+      var pct = total > 0 ? Math.round(m.amount/total*100) : 0;
+      html += '<div class="legend-row"><span class="legend-dot" style="background:var(' + hashColor(m.name) + ')"></span>'
+        + '<span class="legend-name">' + escapeHtml(m.name) + '</span>'
+        + '<span class="legend-pct">' + pct + '%</span>'
+        + '<span class="legend-amt mono">' + fmtBRL(m.amount) + '</span></div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  function renderReports(){
+    var el = $("reportsContent");
+    if(!el) return;
+    var monthTx = txForMonth(state.year, state.month);
+    el.innerHTML = reportFixedVariableHtml(monthTx) + reportMonthCompareHtml() + reportTopExpensesHtml(monthTx) + reportNextInvoiceHtml();
+  }
+
+  // relatório 1: fixo (contas fixas, com templateId) x variável (resto)
+  function reportFixedVariableHtml(monthTx){
+    var fixo = 0, variavel = 0;
+    monthTx.forEach(function(t){
+      if(t.type !== "expense") return;
+      if(t.templateId) fixo += (t.amount||0); else variavel += (t.amount||0);
+    });
+    var total = fixo + variavel;
+    var html = '<div class="dash-section"><div class="section-title-flat">Fixo x variável</div>';
+    if(total <= 0){
+      html += '<div class="report-empty">Sem despesas registradas neste mês.</div></div>';
+      return html;
+    }
+    var pctFixo = Math.round(fixo/total*100);
+    var pctVar = 100 - pctFixo;
+    html += '<div class="pay-bar-row"><div class="pay-bar-top"><span><span class="legend-dot" style="background:var(--accent);margin-right:6px;"></span>Fixo</span><span class="mono">' + fmtBRL(fixo) + ' · ' + pctFixo + '%</span></div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + Math.max(pctFixo,2) + '%;background:var(--accent)"></div></div></div>';
+    html += '<div class="pay-bar-row"><div class="pay-bar-top"><span><span class="legend-dot" style="background:var(--expense);margin-right:6px;"></span>Variável</span><span class="mono">' + fmtBRL(variavel) + ' · ' + pctVar + '%</span></div>'
+      + '<div class="bar-track"><div class="bar-fill" style="width:' + Math.max(pctVar,2) + '%;background:var(--expense)"></div></div></div>';
+    html += '<div class="report-caption">Fixo = contas fixas cadastradas (aluguel, parcelas, assinaturas…). Variável = o restante dos gastos do mês.</div>';
+    html += '</div>';
+    return html;
+  }
+
+  // relatório 2: comparativo por categoria com o mês anterior
+  function reportMonthCompareHtml(){
+    var curTx = txForMonth(state.year, state.month);
+    var prevD = new Date(state.year, state.month - 1, 1);
+    var prevTx = txForMonth(prevD.getFullYear(), prevD.getMonth());
+    var curByCat = {}, prevByCat = {};
+    curTx.forEach(function(t){ if(t.type==="expense"){ var c=t.category||"Outros"; curByCat[c]=(curByCat[c]||0)+(t.amount||0); } });
+    prevTx.forEach(function(t){ if(t.type==="expense"){ var c=t.category||"Outros"; prevByCat[c]=(prevByCat[c]||0)+(t.amount||0); } });
+    var names = Object.keys(curByCat).concat(Object.keys(prevByCat)).filter(function(v,i,a){ return a.indexOf(v)===i; });
+    var rows = names.map(function(name){
+      var cur = curByCat[name] || 0, prev = prevByCat[name] || 0;
+      return { name:name, cur:cur, prev:prev, delta: cur - prev };
+    });
+    rows.sort(function(a,b){ return b.cur - a.cur; });
+
+    var html = '<div class="dash-section"><div class="section-title-flat">Comparativo com o mês anterior</div>';
+    if(rows.length === 0){
+      html += '<div class="report-empty">Sem dados suficientes para comparar.</div></div>';
+      return html;
+    }
+    html += '<table class="report-table"><thead><tr><th>Categoria</th><th class="num">Este mês</th><th class="num">Mês ant.</th><th class="num">Diferença</th></tr></thead><tbody>';
+    rows.forEach(function(r){
+      var deltaCls = r.delta > 0 ? "delta-up" : (r.delta < 0 ? "delta-down" : "");
+      var sign = r.delta > 0 ? "+" : (r.delta < 0 ? "−" : "");
+      html += '<tr><td>' + escapeHtml(r.name) + '</td><td class="num mono">' + fmtBRL(r.cur) + '</td><td class="num mono">' + fmtBRL(r.prev) + '</td>'
+        + '<td class="num mono ' + deltaCls + '">' + sign + fmtBRL(Math.abs(r.delta)) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  // relatório 3: top 5 maiores gastos do mês
+  function reportTopExpensesHtml(monthTx){
+    var items = monthTx.filter(function(t){ return t.type === "expense"; }).slice().sort(function(a,b){ return (b.amount||0)-(a.amount||0); }).slice(0,5);
+    var html = '<div class="dash-section"><div class="section-title-flat">Top 5 maiores gastos do mês</div>';
+    if(items.length === 0){
+      html += '<div class="report-empty">Sem despesas registradas neste mês.</div></div>';
+      return html;
+    }
+    items.forEach(function(t, i){
+      var initial = (t.category||"?").trim().charAt(0).toUpperCase() || "?";
+      html += '<div class="rank-row"><span class="rank-num">' + (i+1) + '</span>'
+        + '<div class="avatar" style="background:var(' + hashColor(t.category||"Outros") + ')">' + escapeHtml(initial) + '</div>'
+        + '<div class="cat-info"><div class="cat-top"><span class="cat-name">' + escapeHtml(t.category||"Outros") + '</span><span class="cat-amount mono">' + fmtBRL(t.amount) + '</span></div>'
+        + (t.note || t.paymentMethod ? '<div class="tx-note" style="overflow:visible;white-space:normal;">' + [t.paymentMethod,t.note].filter(Boolean).map(escapeHtml).join(" · ") + '</div>' : '')
+        + '</div></div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  // relatório 4: parcelas de cartão já lançadas para o próximo mês — como a
+  // fatura inteira é importada de uma vez só, isto mostra o que já está
+  // garantido (parcelas em andamento) antes da próxima importação somar o resto
+  function reportNextInvoiceHtml(){
+    var nextD = new Date(state.year, state.month + 1, 1);
+    var nextTx = txForMonth(nextD.getFullYear(), nextD.getMonth());
+    var items = nextTx.filter(function(t){ return t.type === "expense" && (t.paymentMethod||"") === "Cartão de Crédito"; });
+    var total = items.reduce(function(s,t){ return s + (t.amount||0); }, 0);
+    var monthLabel = nextD.toLocaleDateString("pt-BR", {month:"long", year:"numeric"});
+
+    var html = '<div class="dash-section"><div class="section-title-flat">Parcelas já previstas · ' + escapeHtml(monthLabel) + '</div>';
+    if(items.length === 0){
+      html += '<div class="report-empty">Nenhuma parcela de cartão de crédito já lançada para o próximo mês ainda.</div>';
+    } else {
+      items.sort(function(a,b){ return (b.amount||0)-(a.amount||0); });
+      items.forEach(function(t){
+        html += '<div class="pay-bar-row" style="margin-bottom:8px;"><div class="pay-bar-top"><span>' + escapeHtml(t.note || t.category || "Despesa") + '</span><span class="mono">' + fmtBRL(t.amount) + '</span></div></div>';
+      });
+      html += '<div class="pay-bar-row" style="margin-top:4px;border-top:1px dashed var(--border);padding-top:8px;"><div class="pay-bar-top" style="font-weight:800;"><span>Total já previsto</span><span class="mono">' + fmtBRL(total) + '</span></div></div>';
+    }
+    html += '<div class="report-caption">Soma das parcelas de cartão de crédito que já têm lançamento futuro gerado (parcelas em andamento). Quando a fatura cheia do mês for importada, o valor final tende a ficar maior.</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  // ---------- sheet / form ----------
+  function setFormType(type){
+    state.formType = type;
+    document.querySelectorAll(".type-btn").forEach(function(btn){
+      btn.classList.toggle("active", btn.getAttribute("data-type") === type);
+    });
+    updateCategoryDatalist();
+    updateSalaryBreakdown();
+  }
+
+  function openSheet(tx){
+    state.editingId = tx ? tx.id : null;
+    els.sheetTitle.textContent = tx ? "Editar lançamento" : "Novo lançamento";
+    els.deleteBtn.style.display = tx ? "block" : "none";
+    setFormType(tx ? tx.type : "income");
+    var shownAmount = tx ? (tx.grossAmount != null ? tx.grossAmount : tx.amount) : "";
+    els.fAmount.value = tx ? String(shownAmount).replace(".", ",") : "";
+    els.fCategory.value = tx ? (tx.category || "") : "";
+    els.fPayment.value = tx ? (tx.paymentMethod || "") : "";
+    els.fNote.value = tx ? (tx.note || "") : "";
+    els.fDate.value = tx ? tx.date : isoToday();
+    updateSalaryBreakdown();
+    document.body.style.overflow = "hidden";
+    els.overlay.classList.add("open");
+    applyViewportFix(els.overlay);
+    setTimeout(function(){ els.fAmount.focus(); }, 200);
+  }
+  function closeSheet(){
+    els.overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    state.editingId = null;
+  }
+
+  function saveForm(){
+    var typedAmount = parseAmount(els.fAmount.value);
+    var category = els.fCategory.value.trim();
+    var date = els.fDate.value || isoToday();
+    if(typedAmount <= 0){ showToast("Informe um valor válido."); return; }
+    if(!category){ showToast("Informe uma categoria."); return; }
+
+    var payload = {
+      type: state.formType,
+      category: category,
+      paymentMethod: els.fPayment.value.trim(),
+      note: els.fNote.value.trim(),
+      date: date
+    };
+
+    if(state.formType === "income" && isSalaryCategory()){
+      var calc = calcSalaryDeductions(typedAmount);
+      payload.amount = calc.net;
+      payload.grossAmount = calc.gross;
+      payload.inss = calc.inss;
+      payload.irrf = calc.irrf;
+      if(!payload.note){
+        payload.note = "Bruto " + fmtBRL(calc.gross) + " · INSS −" + fmtBRL(calc.inss) + " · IRRF −" + fmtBRL(calc.irrf);
+      }
+    } else {
+      payload.amount = typedAmount;
+      payload.grossAmount = null;
+      payload.inss = null;
+      payload.irrf = null;
+    }
+
+    // qualquer confirmação manual (criar ou editar) marca como não-estimado
+    payload.estimated = false;
+
+    if(state.editingId){
+      updateTx(state.editingId, payload);
+    } else {
+      payload.createdAt = Date.now();
+      addTx(payload);
+    }
+    closeSheet();
+    showToast("Salvo.");
+    // jump view to the month of the saved entry
+    var d = new Date(date + "T00:00:00");
+    state.year = d.getFullYear();
+    state.month = d.getMonth();
+    renderMonthLabel();
+  }
+
+  function deleteForm(){
+    if(!state.editingId) return;
+    deleteTx(state.editingId);
+    closeSheet();
+    showToast("Excluído.");
+  }
+
+  // ---------- importar fatura (CSV/Excel) ----------
+  var xlsxLoadPromise = null;
+  function ensureXLSX(){
+    if(window.XLSX) return Promise.resolve(window.XLSX);
+    if(xlsxLoadPromise) return xlsxLoadPromise;
+    xlsxLoadPromise = new Promise(function(resolve, reject){
+      var script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      script.onload = function(){ resolve(window.XLSX); };
+      script.onerror = function(){ reject(new Error("xlsx-load-failed")); };
+      document.head.appendChild(script);
+    });
+    return xlsxLoadPromise;
+  }
+
+  function initImport(){
+    els.importOverlay = $("importOverlay");
+    $("importFileInput").addEventListener("change", handleImportFile);
+    $("importCancelBtn").addEventListener("click", closeImportSheet);
+    $("importConfirmBtn").addEventListener("click", confirmImport);
+    els.importOverlay.addEventListener("click", function(e){ if(e.target === els.importOverlay) closeImportSheet(); });
+  }
+
+  function openImportSheet(){
+    $("importFileInput").value = "";
+    $("importReviewWrap").style.display = "none";
+    $("importConfirmBtn").style.display = "none";
+    $("importPayment").value = "Cartão de Crédito";
+    $("importMonth").value = state.year + "-" + pad2(state.month + 1);
+    state.importItems = [];
+    hideImportProgress();
+    hideImportDebug();
+    setImportStatus("Selecione o arquivo CSV ou Excel exportado do cartão.");
+    els.importOverlay.classList.add("open");
+    applyViewportFix(els.importOverlay);
+    document.body.style.overflow = "hidden";
+  }
+  function closeImportSheet(){
+    els.importOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+    clearInterval(state.importProgressTimer);
+  }
+  function setImportStatus(msg){
+    var el = $("importStatus");
+    if(el) el.textContent = msg;
+  }
+
+  // barra de 0 a 100%: cobre leitura do arquivo (com progresso real, via
+  // FileReader), leitura da planilha e análise de categorias por IA (essa
+  // parte não tem progresso real — vai subindo aos poucos até a resposta
+  // chegar, sem travar em 0% nem prometer um número exato)
+  function setImportProgress(pct){
+    var wrap = $("importProgressWrap");
+    var fill = $("importProgressFill");
+    var label = $("importProgressLabel");
+    if(!wrap || !fill || !label) return;
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    wrap.style.display = "block";
+    fill.style.width = pct + "%";
+    label.textContent = pct + "%";
+  }
+  function hideImportProgress(){
+    clearInterval(state.importProgressTimer);
+    var wrap = $("importProgressWrap");
+    if(wrap) wrap.style.display = "none";
+  }
+
+  function handleImportFile(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    var name = file.name.toLowerCase();
+    setImportStatus("Lendo arquivo…");
+    setImportProgress(2);
+    hideImportDebug();
+    $("importReviewWrap").style.display = "none";
+    $("importConfirmBtn").style.display = "none";
+    state.importItems = [];
+
+    if(/\.xlsx$|\.xls$/.test(name)){
+      ensureXLSX().then(function(XLSX){
+        setImportProgress(15);
+        var reader = new FileReader();
+        reader.onprogress = function(ev){
+          if(ev.lengthComputable){ setImportProgress(15 + (ev.loaded/ev.total)*25); }
+        };
+        reader.onload = function(ev){
+          try{
+            setImportProgress(40);
+            var wb = XLSX.read(ev.target.result, {type:"array"});
+            var sheet = wb.Sheets[wb.SheetNames[0]];
+            var rows = XLSX.utils.sheet_to_json(sheet, {header:1, raw:false});
+            setImportProgress(50);
+            processParsedRows(rows);
+          } catch(err){
+            hideImportProgress();
+            setImportStatus("Não foi possível ler esse arquivo Excel.");
+          }
+        };
+        reader.onerror = function(){ hideImportProgress(); setImportStatus("Não foi possível ler o arquivo."); };
+        reader.readAsArrayBuffer(file);
+      }).catch(function(){
+        hideImportProgress();
+        setImportStatus("Não foi possível carregar o leitor de Excel agora. Tente exportar como CSV.");
+      });
+    } else {
+      var reader2 = new FileReader();
+      reader2.onprogress = function(ev){
+        if(ev.lengthComputable){ setImportProgress((ev.loaded/ev.total)*40); }
+      };
+      reader2.onload = function(ev){
+        try{
+          setImportProgress(45);
+          var rows = parseCSV(String(ev.target.result));
+          setImportProgress(50);
+          processParsedRows(rows);
+        } catch(err){
+          hideImportProgress();
+          setImportStatus("Não foi possível ler esse arquivo.");
+        }
+      };
+      reader2.onerror = function(){ hideImportProgress(); setImportStatus("Não foi possível ler o arquivo."); };
+      reader2.readAsText(file, "utf-8");
+    }
+  }
+
+  // parser de CSV que respeita aspas (necessário pois valores em vírgula
+  // decimal, tipo "87,70", costumam vir entre aspas para não quebrar a
+  // separação por vírgula das colunas)
+  function parseCSV(text){
+    var rows = [], row = [], field = "", inQuotes = false;
+    text = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+    for(var i=0;i<text.length;i++){
+      var c = text[i];
+      if(inQuotes){
+        if(c === '"'){
+          if(text[i+1] === '"'){ field += '"'; i++; } else { inQuotes = false; }
+        } else { field += c; }
+      } else {
+        if(c === '"'){ inQuotes = true; }
+        else if(c === ',' || c === ';'){ row.push(field); field = ""; }
+        else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ""; }
+        else { field += c; }
+      }
+    }
+    if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
+    return rows.filter(function(r){ return r.length > 1 || (r.length === 1 && r[0].trim() !== ""); });
+  }
+
+  function looksLikeDate(s){ return normalizeDateStr(s) !== null; }
+
+  function normalizeDateStr(s){
+    s = String(s == null ? "" : s).trim();
+    if(!s) return null;
+    if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+    var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if(m){
+      var d = parseInt(m[1],10), mo = parseInt(m[2],10), y = parseInt(m[3],10);
+      if(y < 100) y += 2000;
+      if(mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+      return y + "-" + pad2(mo) + "-" + pad2(d);
+    }
+    // numero serial de data do Excel (dias desde 1899-12-30)
+    if(/^\d+(\.\d+)?$/.test(s)){
+      var serial = parseFloat(s);
+      if(serial > 20000 && serial < 80000){
+        var epoch = new Date(Date.UTC(1899,11,30));
+        var dt = new Date(epoch.getTime() + serial*86400000);
+        return dt.getUTCFullYear() + "-" + pad2(dt.getUTCMonth()+1) + "-" + pad2(dt.getUTCDate());
+      }
+    }
+    return null;
+  }
+
+  // procura a linha de cabeçalho em qualquer lugar das primeiras linhas do
+  // arquivo (faturas de banco costumam ter várias linhas de rótulo — nome,
+  // agência, conta, resumo — antes da tabela de lançamentos em si) e
+  // identifica as colunas de data/título/valor e, se existir, a coluna
+  // separada de parcelamento (ex.: Itaú manda "Parcela 1 de 3" numa coluna
+  // à parte, em vez de embutir no nome da compra como o Nubank faz)
+  function rowsToItems(rows){
+    if(!rows || rows.length === 0) return { items: [], debug: { rowCount: 0, headerRowIdx: -1, sampleRows: [] } };
+    var headerRowIdx = -1, dateIdx = -1, titleIdx = -1, amountIdx = -1, installmentIdx = -1;
+    var maxScan = Math.min(rows.length, 40);
+    for(var r = 0; r < maxScan; r++){
+      var row = rows[r] || [];
+      var hd = -1, ht = -1, ha = -1, hi = -1;
+      for(var c = 0; c < row.length; c++){
+        var h = normalizeText(row[c]);
+        if(!h) continue;
+        if(hd === -1 && /^data$|^date$/.test(h)) hd = c;
+        else if(ht === -1 && /lancamento|titulo|title|descri|estabelec|historic/.test(h)) ht = c;
+        else if(ha === -1 && /^valor$|^amount$/.test(h)) ha = c;
+        else if(hi === -1 && /parcela/.test(h)) hi = c;
+      }
+      if(hd > -1 && ht > -1 && ha > -1){
+        headerRowIdx = r; dateIdx = hd; titleIdx = ht; amountIdx = ha; installmentIdx = hi;
+        break;
+      }
+    }
+
+    var startIdx;
+    if(headerRowIdx > -1){
+      startIdx = headerRowIdx + 1;
+    } else {
+      // não achou um cabeçalho reconhecível — assume a ordem data, título,
+      // valor a partir da primeira linha cuja primeira célula pareça data
+      dateIdx = 0; titleIdx = 1; amountIdx = 2; installmentIdx = -1;
+      startIdx = 0;
+      for(var i2 = 0; i2 < rows.length; i2++){
+        if(rows[i2] && looksLikeDate(rows[i2][0])){ startIdx = i2; break; }
+      }
+    }
+
+    var items = [];
+    for(var i = startIdx; i < rows.length; i++){
+      var rr = rows[i];
+      if(!rr) continue;
+      var date = normalizeDateStr(rr[dateIdx]);
+      var title = String(rr[titleIdx] == null ? "" : rr[titleIdx]).trim();
+      var amount = parseAmount(rr[amountIdx]);
+      if(!date || !title || !amount) continue;
+      var item = { date: date, title: title, amount: Math.abs(amount) };
+      if(installmentIdx > -1 && rr[installmentIdx] != null && String(rr[installmentIdx]).trim() !== ""){
+        item.installmentRaw = String(rr[installmentIdx]).trim();
+      }
+      items.push(item);
+    }
+    return {
+      items: items,
+      debug: {
+        rowCount: rows.length,
+        headerRowIdx: headerRowIdx,
+        dateIdx: dateIdx,
+        titleIdx: titleIdx,
+        amountIdx: amountIdx,
+        installmentIdx: installmentIdx,
+        startIdx: startIdx,
+        sampleRows: rows.slice(0, 12)
+      }
+    };
+  }
+
+  // mostra, dentro da própria tela de import, o que o app conseguiu ler do
+  // arquivo quando nada foi reconhecido — assim dá pra diagnosticar um
+  // arquivo problemático sem precisar de acesso técnico ao navegador de
+  // quem está importando (basta pedir um print dessa seção)
+  function showImportDebug(debug){
+    var wrap = $("importDebugWrap");
+    var text = $("importDebugText");
+    if(!wrap || !text || !debug) return;
+    var lines = [];
+    lines.push("Linhas lidas do arquivo: " + debug.rowCount);
+    lines.push("Linha de cabeçalho detectada: " + (debug.headerRowIdx > -1 ? ("linha " + (debug.headerRowIdx+1)) : "nenhuma (usando ordem padrão data/título/valor)"));
+    lines.push("Coluna data: " + debug.dateIdx + " · título: " + debug.titleIdx + " · valor: " + debug.amountIdx + " · parcela: " + debug.installmentIdx);
+    lines.push("");
+    lines.push("Primeiras linhas do arquivo (como o app leu):");
+    (debug.sampleRows || []).forEach(function(r, i){
+      lines.push(i + ": " + JSON.stringify(r));
+    });
+    text.textContent = lines.join("\n");
+    wrap.style.display = "block";
+  }
+  function hideImportDebug(){
+    var wrap = $("importDebugWrap");
+    if(wrap) wrap.style.display = "none";
+  }
+
+  // extrai "X de Y" (Itaú, coluna própria) ou "X/Y" (Nubank, embutido no
+  // nome) de um texto qualquer
+  function parseInstallmentPair(text){
+    var m = String(text||"").match(/(\d{1,2})\s*(?:de|\/)\s*(\d{1,2})(?!\d)/i);
+    if(!m) return null;
+    var cur = parseInt(m[1],10), total = parseInt(m[2],10);
+    if(cur < 1 || total < 1 || cur > total || total > 60) return null;
+    return { current: cur, total: total, matchIndex: m.index, matchText: m[0] };
+  }
+
+  // reconhece "Nome da loja 3/10" como parcela 3 de 10, separando o nome
+  // base (sem o sufixo de parcela) — usado quando a parcela vem embutida no
+  // próprio nome do lançamento, e não numa coluna separada
+  function detectInstallment(title){
+    var pair = parseInstallmentPair(title);
+    if(!pair) return null;
+    var baseTitle = title.slice(0, pair.matchIndex).replace(/[-–—:]\s*$/,"").trim();
+    if(!baseTitle) baseTitle = title.replace(pair.matchText,"").trim();
+    return { current: pair.current, total: pair.total, baseTitle: baseTitle || title };
+  }
+
+  // linhas de pagamento/estorno da fatura não são gastos — ficam desmarcadas
+  // por padrão na revisão, mas o usuário pode incluir se quiser
+  function looksLikePayment(title){
+    var n = normalizeText(title);
+    return /pagamento (recebido|efetuado|com saldo|de fatura)|estorno|reembolso|credito rotativo|saldo em conta|ajuste de fatura/.test(n);
+  }
+
+  // remove TODO separador (espaço, hífen, *, etc.) em vez de só colapsar —
+  // "99 food" e "99Food - NuPay" precisam virar exatamente "99food" e
+  // "99foodnupay" pra que a comparação por substring abaixo funcione; com
+  // espaço colapsado (versão antiga) "99 food" não é substring de "99food
+  // nupay" por causa do espaço entre "99" e "food", e duplicatas assim
+  // passavam batido.
+  function normalizeForMatch(s){
+    return normalizeText(s).replace(/[^a-z0-9]/g,"");
+  }
+  function titlesLooselyMatch(a, b){
+    var na = normalizeForMatch(a), nb = normalizeForMatch(b);
+    if(!na || !nb) return false;
+    return na.indexOf(nb) > -1 || nb.indexOf(na) > -1;
+  }
+  // procura, entre os lançamentos que já existem (de qualquer origem — lançado
+  // manualmente, conta fixa ou uma importação anterior, com ou sem o mesmo id),
+  // um que bata com esse item da fatura: mesma data, mesmo valor e nome
+  // parecido. É assim que reconhecemos "isso já foi lançado" mesmo quando o
+  // registro existente não tem o id determinístico da importação.
+  function findExistingMatch(date, amount, title){
+    return state.transactions.find(function(t){
+      if(t.type !== "expense") return false;
+      if(Math.abs((t.amount||0) - amount) > 0.01) return false;
+      if(t.date !== date) return false;
+      return titlesLooselyMatch(t.note || "", title);
+    });
+  }
+  // segunda rede de segurança: mesmo valor, em até 2 dias de diferença,
+  // mas SEM exigir que o nome bata — cobre o caso de um lançamento digitado
+  // à mão com um nome genérico (ex. "Padaria") antes de a fatura chegar,
+  // que a fatura real depois traz com o nome verdadeiro do estabelecimento
+  // (ex. "Confeitaria Gabriela") — nomes sem nenhuma palavra em comum, que
+  // o titlesLooselyMatch nunca vai conseguir casar. Só serve pra marcar
+  // "possível duplicata" na revisão (o item some da fatura desmarcado por
+  // padrão); não bloqueia a gravação se o usuário confirmar manualmente.
+  function findAmountDateNeighbor(date, amount){
+    var d0 = new Date(date + "T00:00:00").getTime();
+    if(isNaN(d0)) return null;
+    return state.transactions.find(function(t){
+      if(t.type !== "expense") return false;
+      if(Math.abs((t.amount||0) - amount) > 0.01) return false;
+      var dt = new Date(t.date + "T00:00:00").getTime();
+      if(isNaN(dt)) return false;
+      return Math.abs(dt - d0) <= 2 * 86400000;
+    });
+  }
+
+  function processParsedRows(rows){
+    var parsed = rowsToItems(rows);
+    var items = parsed.items;
+    if(items.length === 0){
+      hideImportProgress();
+      setImportStatus("Nenhum lançamento reconhecido nesse arquivo. Confira se é um CSV/Excel de fatura com data, descrição e valor.");
+      showImportDebug(parsed.debug);
+      return;
+    }
+    hideImportDebug();
+    items.forEach(function(it){
+      // parcelamento pode vir numa coluna própria ("Parcela 1 de 3", Itaú)
+      // ou embutido no nome do lançamento ("Loja 3/10", Nubank) — tenta a
+      // coluna primeiro, já que aí o nome não precisa ser recortado
+      var pair = it.installmentRaw ? parseInstallmentPair(it.installmentRaw) : null;
+      if(pair){
+        it.installmentCurrent = pair.current;
+        it.installmentTotal = pair.total;
+        it.baseTitle = it.title;
+        it.futureCount = pair.total - pair.current;
+      } else {
+        var inst = detectInstallment(it.title);
+        if(inst){
+          it.installmentCurrent = inst.current;
+          it.installmentTotal = inst.total;
+          it.baseTitle = inst.baseTitle;
+          it.futureCount = inst.total - inst.current;
+        } else {
+          it.installmentCurrent = null;
+          it.installmentTotal = null;
+          it.baseTitle = it.title;
+          it.futureCount = 0;
+        }
+      }
+      it.alreadyLogged = !!findExistingMatch(it.date, it.amount, it.baseTitle);
+      it.possibleDup = !it.alreadyLogged && !!findAmountDateNeighbor(it.date, it.amount);
+      // já lançado ou possível duplicata vêm DESMARCADOS por padrão — o
+      // usuário tem que marcar de propósito se quiser importar mesmo assim.
+      // Isso é o que evita duplicar valores sem o usuário notar.
+      it.include = !looksLikePayment(it.title) && !it.alreadyLogged && !it.possibleDup;
+    });
+    setImportStatus(items.length + " lançamento(s) encontrado(s). Analisando categorias…");
+    setImportProgress(55);
+    var simPct = 55;
+    state.importProgressTimer = setInterval(function(){
+      simPct = Math.min(92, simPct + 3);
+      setImportProgress(simPct);
+    }, 250);
+    categorizeBatch(items).then(function(cats){
+      clearInterval(state.importProgressTimer);
+      setImportProgress(100);
+      items.forEach(function(it, idx){ it.category = cats[idx] || "Outros"; });
+      state.importItems = items;
+      setTimeout(hideImportProgress, 300);
+      renderImportReview();
+    });
+  }
+
+  function categorizeBatch(items){
+    var claude = window.claude;
+    if(!claude || typeof claude.use !== "function" || items.length === 0){
+      return Promise.resolve(fallbackCategorize(items));
+    }
+    return claude.use("sample").then(function(sample){
+      if(!sample) return fallbackCategorize(items);
+      var cats = collectAllCategories().join(", ");
+      var list = items.map(function(it, idx){ return (idx+1) + ". " + it.title + " (R$ " + it.amount.toFixed(2) + ")"; }).join("\n");
+      var prompt = "Classifique cada item de fatura de cartão de crédito abaixo em UMA categoria de gasto pessoal (português do Brasil). Responda APENAS com um array JSON de strings, na MESMA ORDEM e mesma quantidade dos itens listados, uma categoria por item, sem texto extra.\n\n"
+        + "Nomes de lançamento de fatura brasileira costumam vir truncados, em maiúsculas, com prefixos de maquininha (ex.: \"Mp *\", \"Ig *\", \"Pdv*\", \"Pay*\") seguidos do nome do estabelecimento ou até de pessoa física — mesmo assim, tente INFERIR o tipo de gasto pelo nome sempre que houver qualquer pista (ex.: \"Atacadao 735\" → supermercado/Alimentação; \"Confeitaria Doce Amor\" → Alimentação; \"Auto Posto Bandeira\" → Transporte; \"Frogpay*Farmacia Rosar\" → Saúde; \"Natura Pay*...\" → Beleza; \"Apple.Com/Bill\" → Assinaturas). Só use \"Outros\" quando o nome realmente não der NENHUMA pista sobre o tipo de estabelecimento (ex.: um nome de pessoa física isolado, sem mais contexto).\n\n"
+        + "Categorias já usadas por este usuário (prefira uma destas se fizer sentido; senão crie uma curta nova): " + cats + "\n\n"
+        + "Itens:\n" + list + "\n\n"
+        + "Responda só o array JSON, por exemplo: [\"Alimentação\", \"Transporte\", \"Outros\"].";
+      return sample.json(prompt, {modelTier:"quick"}).then(function(result){
+        if(Array.isArray(result) && result.length === items.length){
+          // quando a IA devolve "Outros", tenta a busca por palavra-chave —
+          // se ela achar algo mais específico, usa; senão mantém "Outros"
+          return result.map(function(c, idx){
+            var aiCat = (c && String(c).trim()) || "";
+            if(!aiCat) return guessCategory(items[idx].title);
+            if(normalizeText(aiCat) === "outros"){
+              var guessed = guessCategory(items[idx].title);
+              if(normalizeText(guessed) !== "outros") return guessed;
+            }
+            return aiCat;
+          });
+        }
+        return fallbackCategorize(items);
+      });
+    }).catch(function(){ return fallbackCategorize(items); });
+  }
+
+  function fallbackCategorize(items){
+    return items.map(function(it){ return guessCategory(it.title); });
+  }
+
+  // busca por palavra-chave no nome do lançamento — cobre as redes e termos
+  // mais comuns de fatura de cartão brasileira, como reforço para quando a
+  // IA não estiver disponível ou tiver devolvido "Outros"
+  function guessCategory(title){
+    var n = normalizeText(title);
+    if(/mercad|superm|atacad|assai\b|carrefour|extra\b|padari|acougue|hortifruti|feira\b|sacolao|emporio|quitanda/.test(n)) return "Alimentação";
+    if(/restaur|lanchon|hamburg|pizza|churrasc|espetinho|self\s*service|rodizio|temaki|sushi|comida|fabrica de lanche/.test(n)) return "Alimentação";
+    if(/ifood|rappi|uber\s*eats|99\s*food/.test(n)) return "Alimentação";
+    if(/confeitar|doceria|sorvet|gelato|acai|cafeteria|\bcafe\b|padoca|brigaderia|bolo|doce/.test(n)) return "Alimentação";
+    if(/posto\b|combust|ipiranga|shell\b|petrobras|\bale\b|graal/.test(n)) return "Transporte";
+    if(/uber\b|99app|99\s|taxi|cabify/.test(n)) return "Transporte";
+    if(/estacionamento|zona azul|pedagio|sem parar|conectcar|veloe/.test(n)) return "Transporte";
+    if(/metro\b|onibus|brt\b|passagem aerea|passagem|locadora/.test(n)) return "Transporte";
+    if(/oficina|auto\s*(centro|posto|pecas|batería|bateria)|pneu|revisao|mecanic|carbi|bateria/.test(n)) return "Transporte";
+    if(/farmac|drogaria|drogasil|pacheco|raia\b|pague\s*menos|clinic|hospital|laborator|dentist|fisioterap|\bexame\b|odonto/.test(n)) return "Saúde";
+    if(/cinema|ingresso|show\b|academia|streaming|\bjogo\b|bar\s|balada|boliche|parque\b|clube\b/.test(n)) return "Lazer";
+    if(/netflix|spotify|prime video|disney|\bhbo\b|youtube|icloud|apple\.com|google\s*(one|play)|assinatura|deezer|amazon prime/.test(n)) return "Assinaturas";
+    if(/magazine|shopping|americanas|amazon|shopee|mercado livre|\bml\b|centauro|renner|riachuelo|\bc&a\b|zara\b|casas bahia|magalu/.test(n)) return "Compras";
+    if(/escola|curso|faculdade|udemy|livraria|colegio|material escolar|apostila/.test(n)) return "Educação";
+    if(/pet\s*shop|petz\b|cobasi|veterinari|racao/.test(n)) return "Pets";
+    if(/salao|barbear|cabelei|manicure|estetic|\bspa\b|natura\b|boticario|avon\b|perfumari/.test(n)) return "Beleza";
+    return "Outros";
+  }
+
+  function renderImportReview(){
+    var listEl = $("importList");
+    var items = state.importItems;
+    $("importReviewWrap").style.display = "block";
+    $("importConfirmBtn").style.display = items.length ? "block" : "none";
+    $("importCount").textContent = items.filter(function(it){ return it.include; }).length;
+    var flaggedCount = items.filter(function(it){ return it.alreadyLogged || it.possibleDup; }).length;
+    var statusMsg = items.length + " lançamento(s) encontrado(s). Confira e ajuste antes de confirmar.";
+    if(flaggedCount > 0){
+      statusMsg += " " + flaggedCount + " já vieram desmarcados por parecerem duplicados — marque manualmente se algum for mesmo novo.";
+    }
+    setImportStatus(statusMsg);
+
+    var html = "";
+    items.forEach(function(it, idx){
+      var dObj = new Date(it.date + "T00:00:00");
+      var dLabel = dObj.toLocaleDateString("pt-BR", {day:"2-digit", month:"2-digit"});
+      var subParts = [dLabel];
+      if(it.installmentTotal){ subParts.push("Parcela " + it.installmentCurrent + "/" + it.installmentTotal); }
+      if(it.futureCount > 0){ subParts.push("+" + it.futureCount + (it.futureCount > 1 ? " meses futuros" : " mês futuro")); }
+      var badge = it.alreadyLogged ? '<span class="est-tag">já lançado</span>'
+        : (it.possibleDup ? '<span class="est-tag">possível duplicata — confira</span>' : '');
+      html += '<div class="import-row">'
+        + '<input type="checkbox" class="import-check" data-idx="' + idx + '" ' + (it.include ? "checked" : "") + '>'
+        + '<div class="import-info">'
+        + '<div class="import-top"><span class="import-title">' + escapeHtml(it.baseTitle || it.title) + badge + '</span><span class="tx-amount out mono">' + fmtBRL(it.amount) + '</span></div>'
+        + '<div class="import-sub">' + escapeHtml(subParts.join(" · ")) + '</div>'
+        + '<input type="text" class="import-cat" data-idx="' + idx + '" list="catList" value="' + escapeAttr(it.category || "Outros") + '">'
+        + '</div>'
+        + '</div>';
+    });
+    listEl.innerHTML = html;
+
+    listEl.querySelectorAll(".import-check").forEach(function(chk){
+      chk.addEventListener("change", function(){
+        var idx = parseInt(chk.getAttribute("data-idx"),10);
+        state.importItems[idx].include = chk.checked;
+        $("importCount").textContent = state.importItems.filter(function(it){ return it.include; }).length;
+      });
+    });
+    listEl.querySelectorAll(".import-cat").forEach(function(inp){
+      inp.addEventListener("input", function(){
+        var idx = parseInt(inp.getAttribute("data-idx"),10);
+        state.importItems[idx].category = inp.value.trim() || "Outros";
+      });
+    });
+  }
+
+  function simpleHash(str){
+    var h = 5381;
+    str = String(str);
+    for(var i=0;i<str.length;i++){ h = ((h*33) ^ str.charCodeAt(i)) >>> 0; }
+    return h.toString(36);
+  }
+
+  function addMonthsToDate(dateStr, n){
+    var parts = dateStr.split("-");
+    var y = parseInt(parts[0],10), m = parseInt(parts[1],10) - 1, d = parseInt(parts[2],10);
+    var target = new Date(y, m + n, 1);
+    var ty = target.getFullYear(), tm = target.getMonth();
+    return ty + "-" + pad2(tm+1) + "-" + pad2(clampDay(ty, tm, d));
+  }
+
+  // grava (ou sobrescreve, se já existir) um lançamento com id determinístico
+  // — reimportar a mesma fatura atualiza os mesmos registros em vez de duplicar
+  function upsertTransaction(id, payload){
+    if(state.backend === "db"){
+      // retorna a promise (em vez de só disparar e engolir erro) para que
+      // quem chama saiba de verdade se cada lançamento foi salvo — sem
+      // isso, uma falha de gravação (por qualquer motivo) ficava invisível:
+      // a tela avisava "importado com sucesso" e pulava de mês, mas nada
+      // aparecia porque o dado nunca chegou a ser salvo
+      return state.dbApi.doc("transactions/" + id).set(payload);
+    } else {
+      var existing = state.transactions.find(function(t){ return t.id === id; });
+      if(existing){
+        Object.assign(existing, payload);
+      } else {
+        payload.id = id;
+        state.transactions.unshift(payload);
+      }
+      saveLocal();
+      renderAll();
+      return Promise.resolve();
+    }
+  }
+
+  function confirmImport(){
+    var items = state.importItems.filter(function(it){ return it.include; });
+    if(items.length === 0){ showToast("Nenhum lançamento selecionado."); closeImportSheet(); return; }
+    var btn = $("importConfirmBtn");
+    if(btn.disabled) return; // evita clique duplo enquanto está salvando
+    btn.disabled = true;
+    btn.textContent = "Salvando…";
+    var payment = ($("importPayment").value || "Cartão de Crédito").trim();
+    var count = 0, skipped = 0;
+    // o mês em que a fatura é lançada não é derivado das datas dos itens —
+    // é escolhido pelo usuário no campo "Lançar no mês de" (pensado como
+    // mês de pagamento/débito no saldo, não o período de compras da
+    // fatura). Ex.: fatura de setembro (fecha 06/10) mas paga em novembro
+    // → ele seleciona novembro e tudo cai lá. Forçamos a primeira
+    // ocorrência de cada item pra esse mês (mantendo o dia original,
+    // ajustado se o mês for mais curto) — parcelas futuras projetadas
+    // continuam avançando normalmente a partir daí.
+    var referenceMonth = ($("importMonth").value || "").slice(0,7);
+    if(!referenceMonth){ referenceMonth = state.year + "-" + pad2(state.month + 1); }
+    function forceMonth(dateStr, monthKeyStr){
+      var day = parseInt(dateStr.slice(8,10), 10);
+      var ry = parseInt(monthKeyStr.slice(0,4), 10);
+      var rm = parseInt(monthKeyStr.slice(5,7), 10) - 1;
+      return ry + "-" + pad2(rm+1) + "-" + pad2(clampDay(ry, rm, day));
+    }
+    var targetMonth = referenceMonth;
+    // primeiro só MONTA a lista do que precisa ser gravado, sem disparar
+    // nada ainda — o banco do artefato tem um limite de gravações
+    // concorrentes, e mandar a fatura inteira de uma vez (dezenas de
+    // gravações em paralelo) estourava esse limite e fazia TODAS falharem
+    // de uma vez ("The request was malformed or exceeds a limit")
+    var writes = [];
+    items.forEach(function(it){
+      var baseTitle = it.baseTitle || it.title;
+      var category = it.category || "Outros";
+      var forcedDate = forceMonth(it.date, referenceMonth);
+      if(it.installmentTotal){
+        var groupHash = simpleHash(baseTitle + "|" + it.amount.toFixed(2) + "|" + it.installmentTotal);
+        for(var n = it.installmentCurrent; n <= it.installmentTotal; n++){
+          var offset = n - it.installmentCurrent;
+          var txDate = offset === 0 ? forcedDate : addMonthsToDate(forcedDate, offset);
+          var id = "imp_" + groupHash + "_p" + n;
+          // se já existe um lançamento com esse id (de uma importação anterior
+          // desta mesma fatura), só atualiza. Senão, checa se essa parcela já
+          // foi lançada por outro caminho (mesma data+valor+nome parecido) —
+          // se sim, não duplica: pula e mantém o que já existe intacto.
+          var isOwn = state.transactions.some(function(t){ return t.id === id; });
+          if(!isOwn && findExistingMatch(txDate, it.amount, baseTitle)){ skipped++; continue; }
+          var payloadP = {
+            type: "expense",
+            amount: it.amount,
+            category: category,
+            paymentMethod: payment,
+            note: baseTitle + " · Parcela " + n + "/" + it.installmentTotal,
+            date: txDate,
+            estimated: false,
+            createdAt: Date.now()
+          };
+          // só a ocorrência ATUAL (offset 0) tem uma "data de compra real"
+          // diferente da data em que foi lançada — parcelas futuras projetadas
+          // não têm compra associada, então não levam originalDate
+          if(offset === 0 && it.date !== txDate){ payloadP.originalDate = it.date; }
+          writes.push({ id: id, payload: payloadP });
+          count++;
+        }
+      } else {
+        var singleHash = simpleHash(forcedDate + "|" + baseTitle + "|" + it.amount.toFixed(2));
+        var id2 = "imp_" + singleHash;
+        var isOwn2 = state.transactions.some(function(t){ return t.id === id2; });
+        if(!isOwn2 && findExistingMatch(forcedDate, it.amount, baseTitle)){ skipped++; return; }
+        var payload2 = {
+          type: "expense",
+          amount: it.amount,
+          category: category,
+          paymentMethod: payment,
+          note: baseTitle,
+          date: forcedDate,
+          estimated: false,
+          createdAt: Date.now()
+        };
+        // guarda a data real da compra quando ela difere da data em que o
+        // lançamento foi arquivado (mês de pagamento) — usado só pra exibição,
+        // não interfere em saldo, filtro de mês nem nos relatórios
+        if(it.date !== forcedDate){ payload2.originalDate = it.date; }
+        writes.push({ id: id2, payload: payload2 });
+        count++;
+      }
+    });
+
+    function finishImport(failCount, firstError){
+      btn.disabled = false;
+      btn.textContent = "Confirmar importação";
+      closeImportSheet();
+      var successCount = count - failCount;
+      if(targetMonth && successCount > 0){
+        var tmParts = targetMonth.split("-");
+        state.year = parseInt(tmParts[0], 10);
+        state.month = parseInt(tmParts[1], 10) - 1;
+        state.expandedCategory = null;
+        state.selectedTx = {};
+        state.paymentFilter = null;
+        renderMonthLabel();
+        renderAll();
+      }
+      var msg = successCount + " lançamento(s) importado(s).";
+      if(skipped > 0) msg += " " + skipped + " já estavam lançados e foram mantidos como estão.";
+      if(failCount > 0) msg += " " + failCount + " falharam ao salvar" + (firstError ? (": " + firstError) : "") + ".";
+      if(targetMonth && successCount > 0) msg += " Mostrando " + new Date(state.year, state.month, 1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"}) + ".";
+      showToast(msg);
+    }
+
+    if(writes.length === 0){
+      finishImport(0, null);
+      return;
+    }
+
+    // grava um de cada vez (nunca em paralelo) — mais lento, mas fica bem
+    // abaixo de qualquer limite de concorrência do banco; a barra reaproveita
+    // o mesmo indicador de 0-100% usado na leitura do arquivo
+    setImportStatus("Salvando lançamentos…");
+    setImportProgress(0);
+    var failCount = 0, firstError = null, doneCount = 0;
+    function saveNext(idx){
+      if(idx >= writes.length){
+        hideImportProgress();
+        finishImport(failCount, firstError);
+        return;
+      }
+      var w = writes[idx];
+      upsertTransaction(w.id, w.payload).catch(function(err){
+        failCount++;
+        if(!firstError) firstError = (err && err.message) ? err.message : String(err || "erro desconhecido");
+      }).then(function(){
+        doneCount++;
+        setImportProgress((doneCount / writes.length) * 100);
+        saveNext(idx + 1);
+      });
+    }
+    saveNext(0);
+  }
+
+  // ---------- export ----------
+  function exportCsv(){
+    var rows = [["data","tipo","categoria","forma_pagamento","descricao","valor_liquido","valor_bruto","inss","irrf"]];
+    state.transactions.slice().sort(function(a,b){ return a.date < b.date ? -1 : 1; }).forEach(function(t){
+      rows.push([
+        t.date, t.type === "income" ? "receita" : "despesa", t.category || "", t.paymentMethod || "",
+        (t.note||"").replace(/"/g,'""'), String(t.amount).replace(".",","),
+        t.grossAmount != null ? String(t.grossAmount).replace(".",",") : "",
+        t.inss != null ? String(t.inss).replace(".",",") : "",
+        t.irrf != null ? String(t.irrf).replace(".",",") : ""
+      ]);
+    });
+    var csv = rows.map(function(r){
+      return r.map(function(cell){
+        cell = String(cell);
+        return /[",;\n]/.test(cell) ? '"' + cell.replace(/"/g,'""') + '"' : cell;
+      }).join(";");
+    }).join("\n");
+
+    var claude = window.claude;
+    if(claude && typeof claude.use === "function"){
+      claude.use("downloads").then(function(dl){
+        if(dl){
+          dl.save({filename:"saldo-lancamentos.csv", data:csv}).catch(function(){
+            fallbackDownload(csv);
+          });
+        } else {
+          fallbackDownload(csv);
+        }
+      }).catch(function(){ fallbackDownload(csv); });
+    } else {
+      fallbackDownload(csv);
+    }
+  }
+  function fallbackDownload(csv){
+    try{
+      var blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "saldo-lancamentos.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    } catch(e){
+      showToast("Não foi possível exportar agora.");
+    }
+  }
+
+})();
+</script>
+<script>
+  // Registra o service worker (deixa o app instalável e abrindo rápido
+  // offline). Se o navegador não suportar, o app continua funcionando
+  // normalmente, só sem esse extra.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(){});
+    });
+  }
+</script>
+</body>
+</html>
