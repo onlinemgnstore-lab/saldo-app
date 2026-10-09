@@ -404,6 +404,11 @@
   .sheet-handle{ width:36px; height:4px; border-radius:999px; background:var(--border); margin:0 auto 16px; }
   .sheet-title{ font-family:'Fraunces',serif; font-size:20px; font-weight:500; margin-bottom:16px; }
 
+  .install-steps{ margin:0 0 4px; padding-left:20px; font-size:14px; line-height:1.55; color:var(--ink-muted); }
+  .install-steps li{ margin-bottom:10px; }
+  .install-steps li:last-child{ margin-bottom:0; }
+  .install-steps strong{ color:var(--ink); }
+
   .voice-btn{
     width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
     border:1.5px dashed var(--border); background:var(--surface-alt); color:var(--ink);
@@ -757,6 +762,36 @@
   </div>
 </div>
 
+<div class="overlay" id="installOverlay">
+  <div class="sheet">
+   <div class="sheet-body">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📲 Adicione o Saldo à tela inicial</div>
+    <p style="color:var(--ink-muted); font-size:14px; line-height:1.55; margin:0 0 14px;">
+      Assim o Saldo abre como um app de verdade, com ícone no seu celular — sem
+      precisar digitar o endereço toda vez.
+    </p>
+    <ol id="installStepsIOS" class="install-steps" style="display:none;">
+      <li>Toque no ícone de <strong>compartilhar</strong> (quadrado com uma seta pra cima) na barra do Safari.</li>
+      <li>Role as opções e toque em <strong>"Adicionar à Tela de Início"</strong>.</li>
+      <li>Toque em <strong>"Adicionar"</strong>, no canto superior direito.</li>
+    </ol>
+    <ol id="installStepsAndroid" class="install-steps" style="display:none;">
+      <li>Toque no menu <strong>⋮</strong> (três pontinhos), no canto superior direito do navegador.</li>
+      <li>Toque em <strong>"Instalar app"</strong> ou <strong>"Adicionar à tela inicial"</strong>.</li>
+      <li>Confirme tocando em <strong>"Instalar"</strong> ou <strong>"Adicionar"</strong>.</li>
+    </ol>
+    <ol id="installStepsGeneric" class="install-steps" style="display:none;">
+      <li>Abra o menu do seu navegador.</li>
+      <li>Procure a opção <strong>"Adicionar à tela inicial"</strong> ou <strong>"Instalar app"</strong>.</li>
+    </ol>
+   </div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="installCloseBtn" type="button" style="width:100%;">Entendi</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="renewalOverlay">
   <div class="sheet">
    <div class="sheet-body">
@@ -906,6 +941,10 @@
     $("trialCloseBtn").addEventListener("click", closeTrialPopup);
     els.trialOverlay.addEventListener("click", function(e){ if(e.target === els.trialOverlay) closeTrialPopup(); });
 
+    els.installOverlay = $("installOverlay");
+    $("installCloseBtn").addEventListener("click", closeInstallPopup);
+    els.installOverlay.addEventListener("click", function(e){ if(e.target === els.installOverlay) closeInstallPopup(); });
+
     els.renewalOverlay = $("renewalOverlay");
     $("renewalPixKey").textContent = ADMIN_PIX_KEY;
     $("renewalWhatsAppBtn").href = adminWhatsAppLink();
@@ -960,13 +999,55 @@
   // é só um aviso; quem controla quem continua pagando é você, por fora).
   function maybeShowTrialPopup(){
     try{
-      if(localStorage.getItem("saldo_trial_popup_seen") === "1") return;
+      if(localStorage.getItem("saldo_trial_popup_seen") === "1"){
+        maybeShowInstallPopup();
+        return;
+      }
     } catch(e){}
     if(els.trialOverlay) els.trialOverlay.classList.add("open");
   }
   function closeTrialPopup(){
     if(els.trialOverlay) els.trialOverlay.classList.remove("open");
     try{ localStorage.setItem("saldo_trial_popup_seen", "1"); } catch(e){}
+    maybeShowInstallPopup();
+  }
+
+  // Aviso (uma vez só por aparelho) ensinando a adicionar o app à tela
+  // inicial. Não aparece se a pessoa já abriu o Saldo "instalado" (modo
+  // standalone) nem em computador — lá a instrução não se aplica.
+  function isStandaloneApp(){
+    try{
+      return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+        window.navigator.standalone === true;
+    } catch(e){ return false; }
+  }
+  function detectInstallPlatform(){
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if(isIOS) return "ios";
+    if(/Android/.test(ua)) return "android";
+    return "desktop";
+  }
+  function maybeShowInstallPopup(){
+    try{
+      if(localStorage.getItem("saldo_install_popup_seen") === "1") return;
+    } catch(e){}
+    if(isStandaloneApp()){
+      try{ localStorage.setItem("saldo_install_popup_seen", "1"); } catch(e){}
+      return;
+    }
+    var platform = detectInstallPlatform();
+    if(platform === "desktop") return; // no computador não mostra (nem marca como visto)
+    var ios = $("installStepsIOS"), android = $("installStepsAndroid"), generic = $("installStepsGeneric");
+    if(ios) ios.style.display = platform === "ios" ? "block" : "none";
+    if(android) android.style.display = platform === "android" ? "block" : "none";
+    if(generic) generic.style.display = "none";
+    if(els.installOverlay) els.installOverlay.classList.add("open");
+  }
+  function closeInstallPopup(){
+    if(els.installOverlay) els.installOverlay.classList.remove("open");
+    try{ localStorage.setItem("saldo_install_popup_seen", "1"); } catch(e){}
   }
 
   function copyPixKey(btn){
