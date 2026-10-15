@@ -67,6 +67,7 @@ tr td:last-child{ border-radius:0 12px 12px 0; }
 .pill.ok{ background:var(--accent-soft); color:var(--accent); }
 .pill.warn{ background:#F7E7C4; color:#8A6417; }
 .pill.blocked{ background:#F7E0D8; color:var(--expense); }
+.pill.lifetime{ background:var(--accent); color:var(--accent-ink); }
 .usage-sub{ color:var(--ink-faint); font-size:11px; margin-top:3px; }
 .row-actions{ display:flex; gap:6px; flex-wrap:wrap; }
 .row-actions .btn{ padding:7px 10px; font-size:12px; }
@@ -114,7 +115,7 @@ Saldo
 <button class="btn ghost" id="logoutBtn" type="button">Sair</button>
 </div>
 <h1>Usuários</h1>
-<p class="sub">Liberar dá mais 30 dias de acesso a partir de agora. Bloquear corta o acesso na hora, mesmo dentro do prazo. "Uso" mostra quantos lançamentos a pessoa já registrou e quando fez login pela última vez.</p>
+<p class="sub">Liberar dá mais 30 dias de acesso a partir de agora. Vitalício libera pra sempre (uso único, sem mensalidade). Bloquear corta o acesso na hora, mesmo dentro do prazo. "Uso" mostra quantos lançamentos a pessoa já registrou e quando fez login pela última vez.</p>
 <div id="listArea" class="loading">Carregando…</div>
 </div>
 </div>
@@ -127,6 +128,14 @@ Saldo
 // mesmos dados do projeto Supabase usados no index.html
 var SUPABASE_URL = "https://eiceoetvgaquxjgheeea.supabase.co";
 var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpY2VvZXR2Z2FxdXhqZ2hlZWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MzM5NzAsImV4cCI6MjEwNzEwOTk3MH0.ZkMsGNMA-p_Fiq9q-SbW2RNxUFEOb223ajmopmSa1j4";
+
+// data bem distante usada pra marcar acesso "pra sempre" (compra única,
+// sem mensalidade) — tecnicamente ainda é uma data em access_until, só que
+// tão longe que nunca vence na prática.
+var LIFETIME_ISO = "2099-12-31T00:00:00.000Z";
+function isLifetime(iso){
+return iso && new Date(iso).getTime() >= new Date("2090-01-01T00:00:00.000Z").getTime();
+}
 
 var $ = function(id){ return document.getElementById(id); };
 
@@ -179,6 +188,7 @@ return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", {hour
 
 function statusPill(profile){
 if(profile.blocked) return '<span class="pill blocked">Bloqueado</span>';
+if(isLifetime(profile.access_until)) return '<span class="pill lifetime">Vitalício</span>';
 var msLeft = new Date(profile.access_until).getTime() - Date.now();
 if(msLeft <= 0) return '<span class="pill blocked">Vencido</span>';
 var daysLeft = Math.floor(msLeft / (1000*60*60*24));
@@ -221,10 +231,11 @@ list.forEach(function(p){
 html += '<tr>' +
 '<td>' + (p.email || p.id) + (p.is_admin ? ' <span class="pill ok">admin</span>' : '') + '</td>' +
 '<td>' + statusPill(p) + '</td>' +
-'<td>' + fmtDate(p.access_until) + '</td>' +
+'<td>' + (isLifetime(p.access_until) ? '—' : fmtDate(p.access_until)) + '</td>' +
 '<td>' + usageCell(p) + '</td>' +
 '<td><div class="row-actions">' +
 '<button class="btn primary" data-action="liberar" data-id="' + p.id + '">Liberar (+30d)</button>' +
+'<button class="btn ghost" data-action="vitalicio" data-id="' + p.id + '">Vitalício</button>' +
 '<button class="btn danger" data-action="bloquear" data-id="' + p.id + '">Bloquear</button>' +
 '</div></td>' +
 '</tr>';
@@ -240,6 +251,8 @@ var action = btn.getAttribute("data-action");
 btn.disabled = true;
 var update = action === "liberar"
 ? { access_until: new Date(Date.now() + 30*24*60*60*1000).toISOString(), blocked: false }
+: action === "vitalicio"
+? { access_until: LIFETIME_ISO, blocked: false }
 : { blocked: true };
 sb.from("profiles").update(update).eq("id", id).then(function(res){
 btn.disabled = false;
